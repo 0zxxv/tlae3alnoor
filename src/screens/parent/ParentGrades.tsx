@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
@@ -36,11 +37,9 @@ export const ParentGrades: React.FC = () => {
         </Text>
 
         {/* Child Info */}
-        <View style={styles.childInfo}>
+        <View style={[styles.childInfo, isRTL && styles.childInfoRTL]}>
           <View style={styles.childAvatar}>
-            <Text style={styles.childInitial}>
-              {(language === 'ar' ? selectedChild?.nameAr : selectedChild?.name)?.charAt(0)}
-            </Text>
+            <Ionicons name="person" size={28} color={colors.textLight} />
           </View>
           <View style={styles.childDetails}>
             <Text style={[styles.childName, isRTL && styles.textRTL]}>
@@ -58,6 +57,7 @@ export const ParentGrades: React.FC = () => {
             {language === 'ar' ? 'المعدل العام' : 'Overall Average'}
           </Text>
           <View style={styles.averageCircle}>
+            <Ionicons name="trophy" size={24} color={colors.primary} />
             <Text style={styles.averageValue}>{average}%</Text>
           </View>
           <Text style={styles.averageSubtext}>
@@ -78,7 +78,7 @@ export const ParentGrades: React.FC = () => {
           ))
         ) : (
           <View style={styles.noData}>
-            <Text style={styles.noDataIcon}>📊</Text>
+            <Ionicons name="stats-chart-outline" size={48} color={colors.border} />
             <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
               {t('noData')}
             </Text>
@@ -118,6 +118,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  childInfoRTL: {
+    flexDirection: 'row-reverse',
+  },
   childAvatar: {
     width: 60,
     height: 60,
@@ -125,11 +128,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  childInitial: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: colors.textLight,
   },
   childDetails: {
     flex: 1,
@@ -169,9 +167,10 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   averageValue: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.primary,
+    marginTop: 4,
   },
   averageSubtext: {
     fontSize: 12,
@@ -187,14 +186,10 @@ const styles = StyleSheet.create({
   noData: {
     alignItems: 'center',
     paddingVertical: 40,
-  },
-  noDataIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+    gap: 12,
   },
   noDataText: {
     fontSize: 16,
     color: colors.textSecondary,
   },
 });
-

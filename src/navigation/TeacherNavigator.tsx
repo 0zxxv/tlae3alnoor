@@ -1,7 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { colors } from '../theme/colors';
 import {
@@ -14,12 +15,6 @@ import {
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
-  <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-    <Text style={styles.icon}>{icon}</Text>
-  </View>
-);
-
 const TeacherStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} />
@@ -30,7 +25,7 @@ const TeacherStack = () => (
 );
 
 export const TeacherNavigator: React.FC = () => {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
@@ -47,7 +42,13 @@ export const TeacherNavigator: React.FC = () => {
         component={TeacherStack}
         options={{
           tabBarLabel: t('home'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'home' : 'home-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -55,7 +56,13 @@ export const TeacherNavigator: React.FC = () => {
         component={TeacherGrades}
         options={{
           tabBarLabel: t('grades'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="📝" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'create' : 'create-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -63,7 +70,13 @@ export const TeacherNavigator: React.FC = () => {
         component={TeacherAnnouncements}
         options={{
           tabBarLabel: t('announcements'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="📢" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'megaphone' : 'megaphone-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -71,7 +84,13 @@ export const TeacherNavigator: React.FC = () => {
         component={TeacherChat}
         options={{
           tabBarLabel: t('chat'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -92,18 +111,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconContainerActive: {
-    backgroundColor: colors.secondary,
-  },
-  icon: {
-    fontSize: 22,
-  },
 });
-

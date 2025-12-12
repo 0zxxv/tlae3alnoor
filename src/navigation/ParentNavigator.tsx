@@ -1,7 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
@@ -15,12 +16,6 @@ import {
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
-  <View style={[styles.iconContainer, focused && styles.iconContainerActive]}>
-    <Text style={styles.icon}>{icon}</Text>
-  </View>
-);
 
 const ParentStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -49,7 +44,13 @@ const ParentTabs: React.FC = () => {
         component={ParentStack}
         options={{
           tabBarLabel: t('home'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'home' : 'home-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -57,7 +58,13 @@ const ParentTabs: React.FC = () => {
         component={ParentGrades}
         options={{
           tabBarLabel: t('grades'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="📊" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'stats-chart' : 'stats-chart-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -65,7 +72,13 @@ const ParentTabs: React.FC = () => {
         component={ParentAnnouncements}
         options={{
           tabBarLabel: t('announcements'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="📢" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'megaphone' : 'megaphone-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tab.Screen
@@ -73,7 +86,13 @@ const ParentTabs: React.FC = () => {
         component={ParentEvents}
         options={{
           tabBarLabel: t('events'),
-          tabBarIcon: ({ focused }) => <TabIcon icon="📅" focused={focused} />,
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'calendar' : 'calendar-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -105,18 +124,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconContainerActive: {
-    backgroundColor: colors.secondary,
-  },
-  icon: {
-    fontSize: 22,
-  },
 });
-

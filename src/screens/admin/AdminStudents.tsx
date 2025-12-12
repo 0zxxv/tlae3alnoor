@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Button, Input, Card } from '../../components';
@@ -87,12 +88,16 @@ export const AdminStudents: React.FC = () => {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, isRTL && styles.textRTL]}>
-            {t('students')}
-          </Text>
+          <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+            <Ionicons name="school" size={28} color={colors.primary} />
+            <Text style={[styles.title, isRTL && styles.textRTL]}>
+              {t('students')}
+            </Text>
+          </View>
           <Button
             title={t('addStudent')}
             onPress={() => setModalVisible(true)}
+            icon={<Ionicons name="person-add" size={18} color={colors.textLight} />}
           />
         </View>
 
@@ -107,23 +112,24 @@ export const AdminStudents: React.FC = () => {
           <Card key={student.id}>
             <View style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
-                <Text style={styles.studentInitial}>
-                  {(language === 'ar' ? student.nameAr : student.name).charAt(0)}
-                </Text>
+                <Ionicons name="person" size={24} color={colors.textLight} />
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
                   {language === 'ar' ? student.nameAr : student.name}
                 </Text>
-                <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.gradeAr : student.grade}
-                </Text>
+                <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
+                  <Ionicons name="school-outline" size={12} color={colors.textSecondary} />
+                  <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
+                    {language === 'ar' ? student.gradeAr : student.grade}
+                  </Text>
+                </View>
               </View>
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDeleteStudent(student.id)}
               >
-                <Text style={styles.deleteText}>🗑️</Text>
+                <Ionicons name="trash-outline" size={20} color={colors.error} />
               </TouchableOpacity>
             </View>
           </Card>
@@ -140,9 +146,12 @@ export const AdminStudents: React.FC = () => {
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
-              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                {t('addStudent')}
-              </Text>
+              <View style={styles.modalHeader}>
+                <Ionicons name="person-add" size={28} color={colors.primary} />
+                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                  {t('addStudent')}
+                </Text>
+              </View>
 
               <Input
                 label={language === 'ar' ? 'اسم الطالب (إنجليزي)' : 'Student Name (English)'}
@@ -210,6 +219,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -239,11 +256,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  studentInitial: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.textLight,
-  },
   studentInfo: {
     flex: 1,
   },
@@ -251,6 +263,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.text,
+  },
+  gradeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  gradeRowRTL: {
+    flexDirection: 'row-reverse',
   },
   studentGrade: {
     fontSize: 14,
@@ -263,9 +284,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  deleteText: {
-    fontSize: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -281,12 +299,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
-    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -297,4 +320,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

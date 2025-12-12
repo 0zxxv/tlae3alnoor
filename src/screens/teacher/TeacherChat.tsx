@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
@@ -78,6 +79,19 @@ export const TeacherChat: React.FC = () => {
     }
   };
 
+  const getRoleIcon = (role: string): keyof typeof Ionicons.glyphMap => {
+    switch (role) {
+      case 'teacher':
+        return 'school';
+      case 'parent':
+        return 'people';
+      case 'admin':
+        return 'shield-checkmark';
+      default:
+        return 'person';
+    }
+  };
+
   if (!selectedUser) {
     return (
       <View style={styles.container}>
@@ -100,9 +114,7 @@ export const TeacherChat: React.FC = () => {
                 onPress={() => setSelectedUser(chatUser)}
               >
                 <View style={styles.userAvatar}>
-                  <Text style={styles.userInitial}>
-                    {(language === 'ar' ? chatUser.nameAr : chatUser.name).charAt(0)}
-                  </Text>
+                  <Ionicons name={getRoleIcon(chatUser.role)} size={22} color={colors.textLight} />
                 </View>
                 <View style={styles.userInfo}>
                   <View style={[styles.userHeader, isRTL && styles.userHeaderRTL]}>
@@ -148,13 +160,17 @@ export const TeacherChat: React.FC = () => {
           onPress={() => setSelectedUser(null)}
           style={styles.backButton}
         >
-          <Text style={styles.backText}>{isRTL ? '→' : '←'}</Text>
+          <Ionicons 
+            name={isRTL ? 'arrow-forward' : 'arrow-back'} 
+            size={24} 
+            color={colors.primary} 
+          />
         </TouchableOpacity>
-        <View style={styles.chatUserInfo}>
+        <View style={[styles.chatUserInfo, isRTL && styles.chatUserInfoRTL]}>
           <Text style={[styles.chatUserName, isRTL && styles.textRTL]}>
             {language === 'ar' ? selectedUser.nameAr : selectedUser.name}
           </Text>
-          <Text style={styles.chatUserRole}>
+          <Text style={[styles.chatUserRole, isRTL && styles.textRTL]}>
             {getRoleLabel(selectedUser.role)}
           </Text>
         </View>
@@ -169,6 +185,7 @@ export const TeacherChat: React.FC = () => {
       >
         {conversationMessages.length === 0 ? (
           <View style={styles.noMessages}>
+            <Ionicons name="chatbubble-ellipses-outline" size={48} color={colors.border} />
             <Text style={styles.noMessagesText}>{t('noMessages')}</Text>
           </View>
         ) : (
@@ -219,7 +236,7 @@ export const TeacherChat: React.FC = () => {
           onPress={handleSend}
           disabled={!newMessage.trim()}
         >
-          <Text style={styles.sendText}>{t('send')}</Text>
+          <Ionicons name="send" size={20} color={colors.textLight} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -263,11 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  userInitial: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.textLight,
   },
   userInfo: {
     flex: 1,
@@ -327,13 +339,11 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
-  backText: {
-    fontSize: 24,
-    color: colors.primary,
-    fontWeight: 'bold',
-  },
   chatUserInfo: {
     flex: 1,
+  },
+  chatUserInfoRTL: {
+    alignItems: 'flex-end',
   },
   chatUserName: {
     fontSize: 18,
@@ -356,6 +366,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 40,
+    gap: 12,
   },
   noMessagesText: {
     fontSize: 16,
@@ -427,17 +438,13 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButtonDisabled: {
     opacity: 0.5,
   },
-  sendText: {
-    color: colors.textLight,
-    fontWeight: '600',
-    fontSize: 14,
-  },
 });
-

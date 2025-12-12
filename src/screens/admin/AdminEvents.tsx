@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Button, Input, EventCard } from '../../components';
@@ -25,10 +26,10 @@ export const AdminEvents: React.FC = () => {
   const [date, setDate] = useState('');
   const [eventType, setEventType] = useState<'upcoming' | 'current' | 'previous'>('upcoming');
 
-  const eventTypes: { key: 'upcoming' | 'current' | 'previous'; label: string; labelAr: string }[] = [
-    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادم' },
-    { key: 'current', label: 'Current', labelAr: 'حالي' },
-    { key: 'previous', label: 'Previous', labelAr: 'سابق' },
+  const eventTypes: { key: 'upcoming' | 'current' | 'previous'; label: string; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادم', icon: 'time-outline' },
+    { key: 'current', label: 'Current', labelAr: 'حالي', icon: 'play-circle-outline' },
+    { key: 'previous', label: 'Previous', labelAr: 'سابق', icon: 'checkmark-circle-outline' },
   ];
 
   const handleAddEvent = () => {
@@ -98,12 +99,16 @@ export const AdminEvents: React.FC = () => {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, isRTL && styles.textRTL]}>
-            {t('events')}
-          </Text>
+          <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+            <Ionicons name="calendar" size={28} color={colors.primary} />
+            <Text style={[styles.title, isRTL && styles.textRTL]}>
+              {t('events')}
+            </Text>
+          </View>
           <Button
             title={t('addEvent')}
             onPress={() => setModalVisible(true)}
+            icon={<Ionicons name="add-circle-outline" size={18} color={colors.textLight} />}
           />
         </View>
 
@@ -121,7 +126,7 @@ export const AdminEvents: React.FC = () => {
               style={styles.deleteButton}
               onPress={() => handleDeleteEvent(event.id)}
             >
-              <Text style={styles.deleteText}>🗑️</Text>
+              <Ionicons name="trash-outline" size={18} color={colors.error} />
             </TouchableOpacity>
           </View>
         ))}
@@ -137,9 +142,12 @@ export const AdminEvents: React.FC = () => {
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
-              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                {t('addEvent')}
-              </Text>
+              <View style={styles.modalHeader}>
+                <Ionicons name="calendar" size={28} color={colors.primary} />
+                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                  {t('addEvent')}
+                </Text>
+              </View>
 
               <Input
                 label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
@@ -194,6 +202,11 @@ export const AdminEvents: React.FC = () => {
                     ]}
                     onPress={() => setEventType(type.key)}
                   >
+                    <Ionicons 
+                      name={type.icon} 
+                      size={16} 
+                      color={eventType === type.key ? colors.textLight : colors.text} 
+                    />
                     <Text
                       style={[
                         styles.typeText,
@@ -244,6 +257,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -276,9 +297,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  deleteText: {
-    fontSize: 16,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -293,12 +311,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
-    textAlign: 'center',
   },
   label: {
     fontSize: 14,
@@ -313,16 +336,19 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: colors.secondary,
-    alignItems: 'center',
   },
   typeButtonActive: {
     backgroundColor: colors.primary,
   },
   typeText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.text,
   },
@@ -338,4 +364,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

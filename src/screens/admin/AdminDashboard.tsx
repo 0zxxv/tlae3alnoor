@@ -5,8 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card } from '../../components';
@@ -17,15 +19,15 @@ export const AdminDashboard: React.FC = () => {
   const navigation = useNavigation<any>();
 
   const quickActions = [
-    { id: 'students', title: t('students'), titleAr: 'الطلاب', icon: '👨‍🎓', screen: 'AdminStudents' },
-    { id: 'events', title: t('events'), titleAr: 'الفعاليات', icon: '📅', screen: 'AdminEvents' },
-    { id: 'slideshow', title: t('slideshow'), titleAr: 'عرض الصور', icon: '🖼️', screen: 'AdminSlideshow' },
+    { id: 'students', title: t('students'), titleAr: 'الطلاب', icon: 'school' as const, screen: 'AdminStudents' },
+    { id: 'events', title: t('events'), titleAr: 'الفعاليات', icon: 'calendar' as const, screen: 'AdminEvents' },
+    { id: 'slideshow', title: t('slideshow'), titleAr: 'عرض الصور', icon: 'images' as const, screen: 'AdminSlideshow' },
   ];
 
   const stats = [
-    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: '👨‍🎓', color: colors.primary },
-    { label: language === 'ar' ? 'الفعاليات' : 'Events', value: mockEvents.length, icon: '📅', color: colors.success },
-    { label: language === 'ar' ? 'الصور' : 'Slides', value: mockSlideshow.length, icon: '🖼️', color: colors.warning },
+    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: 'school' as const, color: colors.primary },
+    { label: language === 'ar' ? 'الفعاليات' : 'Events', value: mockEvents.length, icon: 'calendar' as const, color: colors.success },
+    { label: language === 'ar' ? 'الصور' : 'Slides', value: mockSlideshow.length, icon: 'images' as const, color: colors.warning },
   ];
 
   return (
@@ -35,7 +37,11 @@ export const AdminDashboard: React.FC = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Welcome Card */}
         <View style={styles.welcomeCard}>
-          <Text style={styles.welcomeEmoji}>👨‍💼</Text>
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.welcomeLogo}
+            resizeMode="contain"
+          />
           <Text style={[styles.welcomeText, isRTL && styles.textRTL]}>
             {language === 'ar' ? 'مرحباً بك في لوحة التحكم' : 'Welcome to Admin Panel'}
           </Text>
@@ -50,7 +56,7 @@ export const AdminDashboard: React.FC = () => {
         <View style={styles.statsContainer}>
           {stats.map((stat, index) => (
             <View key={index} style={styles.statCard}>
-              <Text style={styles.statIcon}>{stat.icon}</Text>
+              <Ionicons name={stat.icon} size={24} color={stat.color} />
               <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
@@ -71,12 +77,16 @@ export const AdminDashboard: React.FC = () => {
               activeOpacity={0.8}
             >
               <View style={styles.actionIcon}>
-                <Text style={styles.actionEmoji}>{action.icon}</Text>
+                <Ionicons name={action.icon} size={24} color={colors.primary} />
               </View>
               <Text style={[styles.actionText, isRTL && styles.textRTL]}>
                 {language === 'ar' ? action.titleAr : action.title}
               </Text>
-              <Text style={styles.actionArrow}>→</Text>
+              <Ionicons 
+                name={isRTL ? 'chevron-back' : 'chevron-forward'} 
+                size={20} 
+                color={colors.primary} 
+              />
             </TouchableOpacity>
           ))}
         </View>
@@ -86,9 +96,7 @@ export const AdminDashboard: React.FC = () => {
           {mockStudents.slice(0, 3).map((student) => (
             <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
-                <Text style={styles.studentInitial}>
-                  {(language === 'ar' ? student.nameAr : student.name).charAt(0)}
-                </Text>
+                <Ionicons name="person" size={20} color={colors.textLight} />
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
@@ -106,9 +114,12 @@ export const AdminDashboard: React.FC = () => {
         <Card title={language === 'ar' ? 'الفعاليات القادمة' : 'Upcoming Events'}>
           {mockEvents.filter(e => e.type === 'upcoming').slice(0, 2).map((event) => (
             <View key={event.id} style={styles.eventItem}>
-              <Text style={[styles.eventTitle, isRTL && styles.textRTL]}>
-                {language === 'ar' ? event.titleAr : event.title}
-              </Text>
+              <View style={[styles.eventRow, isRTL && styles.eventRowRTL]}>
+                <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+                <Text style={[styles.eventTitle, isRTL && styles.textRTL]}>
+                  {language === 'ar' ? event.titleAr : event.title}
+                </Text>
+              </View>
               <Text style={[styles.eventDate, isRTL && styles.textRTL]}>
                 {new Date(event.date).toLocaleDateString(
                   language === 'ar' ? 'ar-SA' : 'en-US'
@@ -138,8 +149,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  welcomeEmoji: {
-    fontSize: 48,
+  welcomeLogo: {
+    width: 60,
+    height: 60,
     marginBottom: 12,
   },
   welcomeText: {
@@ -170,13 +182,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  statIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
   statValue: {
     fontSize: 28,
     fontWeight: 'bold',
+    marginTop: 8,
   },
   statLabel: {
     fontSize: 12,
@@ -211,19 +220,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actionEmoji: {
-    fontSize: 24,
-  },
   actionText: {
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-  },
-  actionArrow: {
-    fontSize: 20,
-    color: colors.primary,
-    fontWeight: 'bold',
   },
   studentItem: {
     flexDirection: 'row',
@@ -244,11 +245,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  studentInitial: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textLight,
-  },
   studentInfo: {
     flex: 1,
   },
@@ -266,15 +262,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  eventRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  eventRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   eventTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
+    flex: 1,
   },
   eventDate: {
     fontSize: 12,
     color: colors.primary,
+    marginLeft: 24,
   },
 });
-

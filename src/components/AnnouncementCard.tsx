@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Announcement } from '../types';
 import { colors } from '../theme/colors';
 import { useLanguage } from '../context/LanguageContext';
@@ -39,7 +40,7 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
     >
       <View style={[styles.header, isRTL && styles.headerRTL]}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>📢</Text>
+          <Ionicons name="megaphone" size={20} color={colors.primary} />
         </View>
         <View style={styles.headerInfo}>
           <Text style={[styles.title, isRTL && styles.textRTL]}>{title}</Text>
@@ -92,9 +93,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    fontSize: 20,
-  },
   headerInfo: {
     flex: 1,
   },
@@ -117,4 +115,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Event } from '../types';
 import { colors } from '../theme/colors';
 import { useLanguage } from '../context/LanguageContext';
@@ -41,6 +42,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
     }
   };
 
+  const getTypeIcon = (): keyof typeof Ionicons.glyphMap => {
+    switch (event.type) {
+      case 'upcoming':
+        return 'time-outline';
+      case 'current':
+        return 'play-circle-outline';
+      case 'previous':
+        return 'checkmark-circle-outline';
+      default:
+        return 'calendar-outline';
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
@@ -58,13 +72,17 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
       disabled={!onPress}
     >
       <View style={[styles.typeBadge, { backgroundColor: getTypeColor() }]}>
+        <Ionicons name={getTypeIcon()} size={12} color={colors.textLight} />
         <Text style={styles.typeText}>{getTypeLabel()}</Text>
       </View>
       
       <Text style={[styles.title, isRTL && styles.textRTL]}>{title}</Text>
-      <Text style={[styles.date, isRTL && styles.textRTL]}>
-        {formatDate(event.date)}
-      </Text>
+      
+      <View style={[styles.dateRow, isRTL && styles.dateRowRTL]}>
+        <Ionicons name="calendar-outline" size={14} color={colors.primary} />
+        <Text style={styles.date}>{formatDate(event.date)}</Text>
+      </View>
+      
       <Text
         style={[styles.description, isRTL && styles.textRTL]}
         numberOfLines={2}
@@ -91,6 +109,9 @@ const styles = StyleSheet.create({
   },
   typeBadge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -107,10 +128,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 4,
   },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 8,
+  },
+  dateRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   date: {
     fontSize: 14,
     color: colors.primary,
-    marginBottom: 8,
   },
   description: {
     fontSize: 14,
@@ -121,4 +150,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

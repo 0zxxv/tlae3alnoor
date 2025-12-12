@@ -8,7 +8,7 @@ interface LanguageToggleProps {
 }
 
 export const LanguageToggle: React.FC<LanguageToggleProps> = ({ style }) => {
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
 
   return (
     <TouchableOpacity onPress={toggleLanguage} style={[styles.container, style]}>
@@ -51,4 +51,3 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
 });
-

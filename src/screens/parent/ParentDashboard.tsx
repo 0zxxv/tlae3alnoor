@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
@@ -36,11 +37,9 @@ export const ParentDashboard: React.FC = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Child Info & Change Button */}
         <View style={[styles.childHeader, isRTL && styles.childHeaderRTL]}>
-          <View style={styles.childInfo}>
+          <View style={[styles.childInfo, isRTL && styles.childInfoRTL]}>
             <View style={styles.childAvatar}>
-              <Text style={styles.childInitial}>
-                {(language === 'ar' ? selectedChild?.nameAr : selectedChild?.name)?.charAt(0)}
-              </Text>
+              <Ionicons name="person" size={24} color={colors.textLight} />
             </View>
             <View>
               <Text style={[styles.childName, isRTL && styles.textRTL]}>
@@ -52,6 +51,7 @@ export const ParentDashboard: React.FC = () => {
             </View>
           </View>
           <TouchableOpacity onPress={handleChangeChild} style={styles.changeButton}>
+            <Ionicons name="swap-horizontal" size={18} color={colors.primary} />
             <Text style={styles.changeText}>
               {language === 'ar' ? 'تغيير' : 'Change'}
             </Text>
@@ -64,14 +64,17 @@ export const ParentDashboard: React.FC = () => {
         {/* Quick Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
+            <Ionicons name="school" size={20} color={colors.primary} />
             <Text style={styles.statValue}>{childGrades.length}</Text>
             <Text style={styles.statLabel}>{t('grades')}</Text>
           </View>
           <View style={styles.statCard}>
+            <Ionicons name="megaphone" size={20} color={colors.primary} />
             <Text style={styles.statValue}>{mockAnnouncements.length}</Text>
             <Text style={styles.statLabel}>{t('announcements')}</Text>
           </View>
           <View style={styles.statCard}>
+            <Ionicons name="calendar" size={20} color={colors.primary} />
             <Text style={styles.statValue}>{upcomingEvents.length}</Text>
             <Text style={styles.statLabel}>{t('events')}</Text>
           </View>
@@ -83,10 +86,18 @@ export const ParentDashboard: React.FC = () => {
             <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
               {t('grades')}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('ParentGrades')}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('ParentGrades')}
+              style={styles.seeAllButton}
+            >
               <Text style={styles.seeAll}>
                 {language === 'ar' ? 'عرض الكل' : 'See All'}
               </Text>
+              <Ionicons 
+                name={isRTL ? 'chevron-back' : 'chevron-forward'} 
+                size={16} 
+                color={colors.primary} 
+              />
             </TouchableOpacity>
           </View>
           {childGrades.slice(0, 2).map((grade) => (
@@ -103,10 +114,18 @@ export const ParentDashboard: React.FC = () => {
             <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
               {t('announcements')}
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('ParentAnnouncements')}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('ParentAnnouncements')}
+              style={styles.seeAllButton}
+            >
               <Text style={styles.seeAll}>
                 {language === 'ar' ? 'عرض الكل' : 'See All'}
               </Text>
+              <Ionicons 
+                name={isRTL ? 'chevron-back' : 'chevron-forward'} 
+                size={16} 
+                color={colors.primary} 
+              />
             </TouchableOpacity>
           </View>
           {mockAnnouncements.slice(0, 2).map((announcement) => (
@@ -133,10 +152,18 @@ export const ParentDashboard: React.FC = () => {
               <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
                 {t('upcomingEvents')}
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('ParentEvents')}>
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('ParentEvents')}
+                style={styles.seeAllButton}
+              >
                 <Text style={styles.seeAll}>
                   {language === 'ar' ? 'عرض الكل' : 'See All'}
                 </Text>
+                <Ionicons 
+                  name={isRTL ? 'chevron-back' : 'chevron-forward'} 
+                  size={16} 
+                  color={colors.primary} 
+                />
               </TouchableOpacity>
             </View>
             {upcomingEvents.slice(0, 2).map((event) => (
@@ -179,6 +206,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  childInfoRTL: {
+    flexDirection: 'row-reverse',
+  },
   childAvatar: {
     width: 50,
     height: 50,
@@ -186,11 +216,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  childInitial: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.textLight,
   },
   childName: {
     fontSize: 18,
@@ -202,6 +227,9 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   changeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingVertical: 8,
     paddingHorizontal: 16,
     backgroundColor: colors.secondary,
@@ -232,6 +260,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: colors.primary,
+    marginTop: 4,
   },
   statLabel: {
     fontSize: 12,
@@ -256,6 +285,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
   },
+  seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
   seeAll: {
     fontSize: 14,
     color: colors.primary,
@@ -275,4 +309,3 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
-

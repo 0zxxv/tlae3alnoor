@@ -10,6 +10,7 @@ import {
   Image,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Button, Input, Slideshow, Card } from '../../components';
@@ -110,12 +111,16 @@ export const AdminSlideshow: React.FC = () => {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, isRTL && styles.textRTL]}>
-            {t('slideshow')}
-          </Text>
+          <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+            <Ionicons name="images" size={28} color={colors.primary} />
+            <Text style={[styles.title, isRTL && styles.textRTL]}>
+              {t('slideshow')}
+            </Text>
+          </View>
           <Button
             title={t('addSlide')}
             onPress={() => setModalVisible(true)}
+            icon={<Ionicons name="add-circle-outline" size={18} color={colors.textLight} />}
           />
         </View>
 
@@ -139,7 +144,7 @@ export const AdminSlideshow: React.FC = () => {
 
         {slides.map((slide) => (
           <Card key={slide.id}>
-            <View style={styles.slideItem}>
+            <View style={[styles.slideItem, isRTL && styles.slideItemRTL]}>
               <Image source={{ uri: slide.uri }} style={styles.slideImage} />
               <View style={styles.slideInfo}>
                 <Text style={[styles.slideTitle, isRTL && styles.textRTL]}>
@@ -150,7 +155,7 @@ export const AdminSlideshow: React.FC = () => {
                 style={styles.deleteButton}
                 onPress={() => handleDeleteSlide(slide.id)}
               >
-                <Text style={styles.deleteText}>🗑️</Text>
+                <Ionicons name="trash-outline" size={18} color={colors.error} />
               </TouchableOpacity>
             </View>
           </Card>
@@ -158,7 +163,7 @@ export const AdminSlideshow: React.FC = () => {
 
         {slides.length === 0 && (
           <View style={styles.noData}>
-            <Text style={styles.noDataIcon}>🖼️</Text>
+            <Ionicons name="images-outline" size={48} color={colors.border} />
             <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
               {language === 'ar' ? 'لا توجد صور' : 'No slides yet'}
             </Text>
@@ -176,9 +181,12 @@ export const AdminSlideshow: React.FC = () => {
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
-              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                {t('addSlide')}
-              </Text>
+              <View style={styles.modalHeader}>
+                <Ionicons name="images" size={28} color={colors.primary} />
+                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                  {t('addSlide')}
+                </Text>
+              </View>
 
               {/* Image Picker */}
               <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
@@ -186,7 +194,7 @@ export const AdminSlideshow: React.FC = () => {
                   <Image source={{ uri: imageUri }} style={styles.previewImage} />
                 ) : (
                   <View style={styles.imagePickerPlaceholder}>
-                    <Text style={styles.imagePickerIcon}>📷</Text>
+                    <Ionicons name="camera" size={48} color={colors.textSecondary} />
                     <Text style={styles.imagePickerText}>
                       {language === 'ar' ? 'اختر صورة' : 'Choose Image'}
                     </Text>
@@ -251,6 +259,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -276,6 +292,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  slideItemRTL: {
+    flexDirection: 'row-reverse',
+  },
   slideImage: {
     width: 80,
     height: 50,
@@ -298,16 +317,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteText: {
-    fontSize: 18,
-  },
   noData: {
     alignItems: 'center',
     paddingVertical: 40,
-  },
-  noDataIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+    gap: 12,
   },
   noDataText: {
     fontSize: 16,
@@ -327,12 +340,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
-    textAlign: 'center',
   },
   imagePicker: {
     width: '100%',
@@ -351,10 +369,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  imagePickerIcon: {
-    fontSize: 48,
-    marginBottom: 8,
+    gap: 8,
   },
   imagePickerText: {
     fontSize: 16,
@@ -369,4 +384,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

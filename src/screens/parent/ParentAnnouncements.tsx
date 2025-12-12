@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, AnnouncementCard } from '../../components';
@@ -18,9 +19,12 @@ export const ParentAnnouncements: React.FC = () => {
       <Header showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, isRTL && styles.textRTL]}>
-          {t('announcements')}
-        </Text>
+        <View style={[styles.headerRow, isRTL && styles.headerRowRTL]}>
+          <Ionicons name="megaphone" size={28} color={colors.primary} />
+          <Text style={[styles.title, isRTL && styles.textRTL]}>
+            {t('announcements')}
+          </Text>
+        </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
           {language === 'ar'
@@ -49,11 +53,19 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  headerRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
@@ -64,4 +76,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

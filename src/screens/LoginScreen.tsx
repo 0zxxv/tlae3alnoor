@@ -8,10 +8,11 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
-import { LanguageToggle, Button } from '../components';
+import { LanguageToggle } from '../components';
 import { UserRole } from '../types';
 
 const { width } = Dimensions.get('window');
@@ -20,10 +21,10 @@ export const LoginScreen: React.FC = () => {
   const { t, isRTL } = useLanguage();
   const { login } = useAuth();
 
-  const roles: { role: UserRole; icon: string }[] = [
-    { role: 'teacher', icon: '👩‍🏫' },
-    { role: 'parent', icon: '👨‍👩‍👧' },
-    { role: 'admin', icon: '👨‍💼' },
+  const roles: { role: UserRole; icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
+    { role: 'teacher', icon: 'school', label: t('teacher') },
+    { role: 'parent', icon: 'people', label: t('parent') },
+    { role: 'admin', icon: 'shield-checkmark', label: t('admin') },
   ];
 
   return (
@@ -34,9 +35,11 @@ export const LoginScreen: React.FC = () => {
 
       <View style={styles.content}>
         <View style={styles.logoContainer}>
-          <View style={styles.logo}>
-            <Text style={styles.logoIcon}>🌟</Text>
-          </View>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.appName}>{t('appName')}</Text>
           <Text style={styles.tagline}>
             {isRTL ? 'تعليم بلا حدود' : 'Education Without Limits'}
@@ -49,7 +52,7 @@ export const LoginScreen: React.FC = () => {
           </Text>
 
           <View style={styles.rolesGrid}>
-            {roles.map(({ role, icon }) => (
+            {roles.map(({ role, icon, label }) => (
               <TouchableOpacity
                 key={role}
                 style={styles.roleCard}
@@ -57,9 +60,9 @@ export const LoginScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <View style={styles.roleIcon}>
-                  <Text style={styles.roleEmoji}>{icon}</Text>
+                  <Ionicons name={icon} size={32} color={colors.primary} />
                 </View>
-                <Text style={styles.roleText}>{t(role)}</Text>
+                <Text style={styles.roleText}>{label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -95,19 +98,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  logoIcon: {
-    fontSize: 60,
   },
   appName: {
     fontSize: 32,
@@ -163,9 +154,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  roleEmoji: {
-    fontSize: 28,
-  },
   roleText: {
     fontSize: 14,
     fontWeight: '600',
@@ -198,4 +186,3 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
 });
-

@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, EventCard } from '../../components';
 import { mockEvents } from '../../data/mockData';
-import { Event } from '../../types';
 
 type EventFilter = 'all' | 'upcoming' | 'current' | 'previous';
 
@@ -18,11 +18,11 @@ export const ParentEvents: React.FC = () => {
   const { t, isRTL, language } = useLanguage();
   const [filter, setFilter] = useState<EventFilter>('all');
 
-  const filters: { key: EventFilter; label: string; labelAr: string }[] = [
-    { key: 'all', label: 'All', labelAr: 'الكل' },
-    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادمة' },
-    { key: 'current', label: 'Current', labelAr: 'حالية' },
-    { key: 'previous', label: 'Previous', labelAr: 'سابقة' },
+  const filters: { key: EventFilter; label: string; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'all', label: 'All', labelAr: 'الكل', icon: 'apps' },
+    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادمة', icon: 'time-outline' },
+    { key: 'current', label: 'Current', labelAr: 'حالية', icon: 'play-circle-outline' },
+    { key: 'previous', label: 'Previous', labelAr: 'سابقة', icon: 'checkmark-circle-outline' },
   ];
 
   const filteredEvents = filter === 'all'
@@ -34,9 +34,12 @@ export const ParentEvents: React.FC = () => {
       <Header showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.title, isRTL && styles.textRTL]}>
-          {t('events')}
-        </Text>
+        <View style={[styles.headerRow, isRTL && styles.headerRowRTL]}>
+          <Ionicons name="calendar" size={28} color={colors.primary} />
+          <Text style={[styles.title, isRTL && styles.textRTL]}>
+            {t('events')}
+          </Text>
+        </View>
 
         {/* Filter Tabs */}
         <ScrollView
@@ -54,6 +57,11 @@ export const ParentEvents: React.FC = () => {
               ]}
               onPress={() => setFilter(f.key)}
             >
+              <Ionicons 
+                name={f.icon} 
+                size={16} 
+                color={filter === f.key ? colors.textLight : colors.text} 
+              />
               <Text
                 style={[
                   styles.filterText,
@@ -73,7 +81,7 @@ export const ParentEvents: React.FC = () => {
           ))
         ) : (
           <View style={styles.noData}>
-            <Text style={styles.noDataIcon}>📅</Text>
+            <Ionicons name="calendar-outline" size={48} color={colors.border} />
             <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
               {language === 'ar' ? 'لا توجد فعاليات' : 'No events found'}
             </Text>
@@ -93,11 +101,19 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  headerRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 16,
   },
   textRTL: {
     textAlign: 'right',
@@ -109,7 +125,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterTab: {
-    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: colors.card,
@@ -132,14 +151,10 @@ const styles = StyleSheet.create({
   noData: {
     alignItems: 'center',
     paddingVertical: 40,
-  },
-  noDataIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+    gap: 12,
   },
   noDataText: {
     fontSize: 16,
     color: colors.textSecondary,
   },
 });
-

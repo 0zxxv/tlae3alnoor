@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card, Button, Input } from '../../components';
@@ -73,6 +74,7 @@ export const TeacherGrades: React.FC = () => {
           <Button
             title={t('addGrade')}
             onPress={() => setModalVisible(true)}
+            icon={<Ionicons name="add-circle-outline" size={20} color={colors.textLight} />}
           />
         </View>
 
@@ -81,9 +83,7 @@ export const TeacherGrades: React.FC = () => {
           <Card key={student.id}>
             <View style={[styles.studentHeader, isRTL && styles.studentHeaderRTL]}>
               <View style={styles.studentAvatar}>
-                <Text style={styles.studentInitial}>
-                  {(language === 'ar' ? student.nameAr : student.name).charAt(0)}
-                </Text>
+                <Ionicons name="person" size={24} color={colors.textLight} />
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
@@ -98,10 +98,13 @@ export const TeacherGrades: React.FC = () => {
             <View style={styles.gradesContainer}>
               {getStudentGrades(student.id).length > 0 ? (
                 getStudentGrades(student.id).map((grade) => (
-                  <View key={grade.id} style={styles.gradeItem}>
-                    <Text style={[styles.gradeSubject, isRTL && styles.textRTL]}>
-                      {language === 'ar' ? grade.subjectAr : grade.subject}
-                    </Text>
+                  <View key={grade.id} style={[styles.gradeItem, isRTL && styles.gradeItemRTL]}>
+                    <View style={[styles.gradeSubjectRow, isRTL && styles.gradeSubjectRowRTL]}>
+                      <Ionicons name="book-outline" size={14} color={colors.textSecondary} />
+                      <Text style={[styles.gradeSubject, isRTL && styles.textRTL]}>
+                        {language === 'ar' ? grade.subjectAr : grade.subject}
+                      </Text>
+                    </View>
                     <View style={styles.gradeScore}>
                       <Text style={styles.gradeValue}>
                         {grade.score}/{grade.maxScore}
@@ -128,9 +131,12 @@ export const TeacherGrades: React.FC = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-              {t('addGrade')}
-            </Text>
+            <View style={styles.modalHeader}>
+              <Ionicons name="create" size={28} color={colors.primary} />
+              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                {t('addGrade')}
+              </Text>
+            </View>
 
             {/* Select Student */}
             <Text style={[styles.label, isRTL && styles.textRTL]}>
@@ -275,11 +281,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  studentInitial: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.textLight,
-  },
   studentInfo: {
     flex: 1,
   },
@@ -302,6 +303,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  gradeItemRTL: {
+    flexDirection: 'row-reverse',
+  },
+  gradeSubjectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  gradeSubjectRowRTL: {
+    flexDirection: 'row-reverse',
   },
   gradeSubject: {
     fontSize: 14,
@@ -335,12 +347,17 @@ const styles = StyleSheet.create({
     padding: 24,
     maxHeight: '80%',
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
-    textAlign: 'center',
   },
   label: {
     fontSize: 14,
@@ -385,4 +402,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-

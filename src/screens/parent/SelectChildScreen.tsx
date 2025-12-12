@@ -7,17 +7,16 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
-import { LanguageToggle, Button } from '../../components';
+import { LanguageToggle } from '../../components';
 import { Student } from '../../types';
 
 export const SelectChildScreen: React.FC = () => {
   const { t, isRTL, language } = useLanguage();
   const { getChildrenForParent, selectChild, logout } = useAuth();
-  const navigation = useNavigation<any>();
 
   const children = getChildrenForParent();
 
@@ -30,13 +29,15 @@ export const SelectChildScreen: React.FC = () => {
       <View style={styles.header}>
         <LanguageToggle />
         <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>{t('logout')}</Text>
+          <Ionicons name="log-out-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         <View style={styles.titleContainer}>
-          <Text style={styles.emoji}>👨‍👩‍👧‍👦</Text>
+          <View style={styles.iconCircle}>
+            <Ionicons name="people" size={40} color={colors.primary} />
+          </View>
           <Text style={[styles.title, isRTL && styles.textRTL]}>
             {t('selectChild')}
           </Text>
@@ -60,18 +61,19 @@ export const SelectChildScreen: React.FC = () => {
                   <Image source={{ uri: child.avatar }} style={styles.childAvatar} />
                 ) : (
                   <View style={styles.childAvatarPlaceholder}>
-                    <Text style={styles.childInitial}>
-                      {(language === 'ar' ? child.nameAr : child.name).charAt(0)}
-                    </Text>
+                    <Ionicons name="person" size={40} color={colors.textLight} />
                   </View>
                 )}
               </View>
               <Text style={[styles.childName, isRTL && styles.textRTL]}>
                 {language === 'ar' ? child.nameAr : child.name}
               </Text>
-              <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
-                {language === 'ar' ? child.gradeAr : child.grade}
-              </Text>
+              <View style={styles.gradeRow}>
+                <Ionicons name="school-outline" size={14} color={colors.primary} />
+                <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
+                  {language === 'ar' ? child.gradeAr : child.grade}
+                </Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -97,15 +99,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logoutButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    width: 40,
+    height: 40,
     backgroundColor: colors.secondary,
     borderRadius: 20,
-  },
-  logoutText: {
-    color: colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -115,8 +114,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  emoji: {
-    fontSize: 60,
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   title: {
@@ -171,17 +175,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  childInitial: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: colors.textLight,
-  },
   childName: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 4,
     textAlign: 'center',
+  },
+  gradeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   childGrade: {
     fontSize: 14,
@@ -214,4 +218,3 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
 });
-

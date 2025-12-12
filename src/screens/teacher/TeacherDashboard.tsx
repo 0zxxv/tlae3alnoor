@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
@@ -19,15 +20,15 @@ export const TeacherDashboard: React.FC = () => {
   const navigation = useNavigation<any>();
 
   const quickActions = [
-    { id: 'grades', title: t('addGrade'), titleAr: 'إضافة درجة', icon: '📝', screen: 'TeacherGrades' },
-    { id: 'announcements', title: t('sendAnnouncement'), titleAr: 'إرسال إعلان', icon: '📢', screen: 'TeacherAnnouncements' },
-    { id: 'chat', title: t('chat'), titleAr: 'المحادثات', icon: '💬', screen: 'TeacherChat' },
+    { id: 'grades', title: t('addGrade'), titleAr: 'إضافة درجة', icon: 'create-outline' as const, screen: 'TeacherGrades' },
+    { id: 'announcements', title: t('sendAnnouncement'), titleAr: 'إرسال إعلان', icon: 'megaphone-outline' as const, screen: 'TeacherAnnouncements' },
+    { id: 'chat', title: t('chat'), titleAr: 'المحادثات', icon: 'chatbubbles-outline' as const, screen: 'TeacherChat' },
   ];
 
   const stats = [
-    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: '👨‍🎓' },
-    { label: language === 'ar' ? 'الإعلانات' : 'Announcements', value: mockAnnouncements.length, icon: '📣' },
-    { label: language === 'ar' ? 'الرسائل' : 'Messages', value: 3, icon: '✉️' },
+    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: 'school-outline' as const },
+    { label: language === 'ar' ? 'الإعلانات' : 'Announcements', value: mockAnnouncements.length, icon: 'megaphone-outline' as const },
+    { label: language === 'ar' ? 'الرسائل' : 'Messages', value: 3, icon: 'mail-outline' as const },
   ];
 
   return (
@@ -39,7 +40,7 @@ export const TeacherDashboard: React.FC = () => {
         <View style={styles.statsContainer}>
           {stats.map((stat, index) => (
             <View key={index} style={styles.statCard}>
-              <Text style={styles.statIcon}>{stat.icon}</Text>
+              <Ionicons name={stat.icon} size={24} color={colors.primary} />
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
@@ -57,7 +58,7 @@ export const TeacherDashboard: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <View style={styles.actionIcon}>
-                  <Text style={styles.actionEmoji}>{action.icon}</Text>
+                  <Ionicons name={action.icon} size={24} color={colors.textLight} />
                 </View>
                 <Text style={styles.actionText}>
                   {language === 'ar' ? action.titleAr : action.title}
@@ -71,9 +72,12 @@ export const TeacherDashboard: React.FC = () => {
         <Card title={language === 'ar' ? 'آخر الإعلانات' : 'Recent Announcements'}>
           {mockAnnouncements.slice(0, 2).map((announcement) => (
             <View key={announcement.id} style={styles.announcementItem}>
-              <Text style={[styles.announcementTitle, isRTL && styles.textRTL]}>
-                {language === 'ar' ? announcement.titleAr : announcement.title}
-              </Text>
+              <View style={[styles.announcementRow, isRTL && styles.announcementRowRTL]}>
+                <Ionicons name="megaphone" size={16} color={colors.primary} />
+                <Text style={[styles.announcementTitle, isRTL && styles.textRTL]}>
+                  {language === 'ar' ? announcement.titleAr : announcement.title}
+                </Text>
+              </View>
               <Text style={[styles.announcementDate, isRTL && styles.textRTL]}>
                 {new Date(announcement.date).toLocaleDateString(
                   language === 'ar' ? 'ar-SA' : 'en-US'
@@ -88,9 +92,7 @@ export const TeacherDashboard: React.FC = () => {
           {mockStudents.slice(0, 3).map((student) => (
             <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
-                <Text style={styles.studentInitial}>
-                  {(language === 'ar' ? student.nameAr : student.name).charAt(0)}
-                </Text>
+                <Ionicons name="person" size={20} color={colors.textLight} />
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
@@ -132,14 +134,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  statIcon: {
-    fontSize: 24,
-    marginBottom: 8,
-  },
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.primary,
+    marginTop: 8,
   },
   statLabel: {
     fontSize: 12,
@@ -171,9 +170,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
   },
-  actionEmoji: {
-    fontSize: 24,
-  },
   actionText: {
     fontSize: 12,
     fontWeight: '600',
@@ -185,15 +181,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  announcementRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  announcementRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   announcementTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 4,
+    flex: 1,
   },
   announcementDate: {
     fontSize: 12,
     color: colors.textSecondary,
+    marginLeft: 24,
   },
   textRTL: {
     textAlign: 'right',
@@ -217,11 +223,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  studentInitial: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.textLight,
-  },
   studentInfo: {
     flex: 1,
   },
@@ -235,4 +236,3 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 });
-

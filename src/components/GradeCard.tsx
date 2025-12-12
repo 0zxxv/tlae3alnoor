@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Grade } from '../types';
 import { colors } from '../theme/colors';
 import { useLanguage } from '../context/LanguageContext';
@@ -21,6 +22,13 @@ export const GradeCard: React.FC<GradeCardProps> = ({ grade }) => {
     return colors.error;
   };
 
+  const getGradeIcon = (): keyof typeof Ionicons.glyphMap => {
+    if (percentage >= 90) return 'trophy';
+    if (percentage >= 70) return 'ribbon';
+    if (percentage >= 50) return 'checkmark-circle';
+    return 'alert-circle';
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
@@ -32,12 +40,16 @@ export const GradeCard: React.FC<GradeCardProps> = ({ grade }) => {
   return (
     <View style={styles.card}>
       <View style={[styles.header, isRTL && styles.headerRTL]}>
-        <Text style={[styles.subject, isRTL && styles.textRTL]}>{subject}</Text>
+        <View style={[styles.subjectRow, isRTL && styles.subjectRowRTL]}>
+          <MaterialCommunityIcons name="book-open-variant" size={18} color={colors.primary} />
+          <Text style={[styles.subject, isRTL && styles.textRTL]}>{subject}</Text>
+        </View>
         <Text style={styles.date}>{formatDate(grade.date)}</Text>
       </View>
       
       <View style={styles.scoreContainer}>
         <View style={styles.scoreCircle}>
+          <Ionicons name={getGradeIcon()} size={20} color={getGradeColor()} />
           <Text style={[styles.score, { color: getGradeColor() }]}>
             {grade.score}
           </Text>
@@ -85,6 +97,14 @@ const styles = StyleSheet.create({
   headerRTL: {
     flexDirection: 'row-reverse',
   },
+  subjectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  subjectRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   subject: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -104,10 +124,11 @@ const styles = StyleSheet.create({
   },
   scoreCircle: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    gap: 4,
   },
   score: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
   },
   maxScore: {
@@ -138,4 +159,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

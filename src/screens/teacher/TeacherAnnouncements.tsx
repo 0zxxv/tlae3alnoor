@@ -7,6 +7,7 @@ import {
   Alert,
   Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
@@ -71,6 +72,7 @@ export const TeacherAnnouncements: React.FC = () => {
           <Button
             title={t('sendAnnouncement')}
             onPress={() => setModalVisible(true)}
+            icon={<Ionicons name="add-circle-outline" size={20} color={colors.textLight} />}
           />
         </View>
 
@@ -90,9 +92,12 @@ export const TeacherAnnouncements: React.FC = () => {
         <View style={styles.modalOverlay}>
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
-              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                {t('sendAnnouncement')}
-              </Text>
+              <View style={styles.modalHeader}>
+                <Ionicons name="megaphone" size={28} color={colors.primary} />
+                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                  {t('sendAnnouncement')}
+                </Text>
+              </View>
 
               <Input
                 label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
@@ -188,12 +193,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 24,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 24,
-    textAlign: 'center',
   },
   textArea: {
     minHeight: 100,
@@ -208,4 +218,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
