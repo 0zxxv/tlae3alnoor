@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Tlae3 Alnoor",
+    "slug": "tlae3-alnoor",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fc0390"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tlae3alnoor.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#fc0390"
+      },
+      "package": "com.tlae3alnoor.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to add slideshow images."
+        }
+      ]
+    ],
+    "extra": {
+      "supportsRTL": true
+    }
+  }
+}
