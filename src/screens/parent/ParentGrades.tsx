@@ -13,7 +13,7 @@ import { Header, GradeCard } from '../../components';
 import { mockGrades } from '../../data/mockData';
 
 export const ParentGrades: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { selectedChild } = useAuth();
 
   // Get grades for selected child
@@ -43,33 +43,29 @@ export const ParentGrades: React.FC = () => {
           </View>
           <View style={styles.childDetails}>
             <Text style={[styles.childName, isRTL && styles.textRTL]}>
-              {language === 'ar' ? selectedChild?.nameAr : selectedChild?.name}
+              {selectedChild?.nameAr || selectedChild?.name}
             </Text>
             <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
-              {language === 'ar' ? selectedChild?.gradeAr : selectedChild?.grade}
+              {selectedChild?.gradeAr || selectedChild?.grade}
             </Text>
           </View>
         </View>
 
         {/* Average Score */}
         <View style={styles.averageCard}>
-          <Text style={styles.averageLabel}>
-            {language === 'ar' ? 'المعدل العام' : 'Overall Average'}
-          </Text>
+          <Text style={styles.averageLabel}>المعدل العام</Text>
           <View style={styles.averageCircle}>
             <Ionicons name="trophy" size={24} color={colors.primary} />
             <Text style={styles.averageValue}>{average}%</Text>
           </View>
           <Text style={styles.averageSubtext}>
-            {language === 'ar'
-              ? `من ${childGrades.length} مواد`
-              : `From ${childGrades.length} subjects`}
+            من {childGrades.length} مواد
           </Text>
         </View>
 
         {/* Grades List */}
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          {language === 'ar' ? 'جميع الدرجات' : 'All Grades'}
+          جميع الدرجات
         </Text>
         
         {childGrades.length > 0 ? (

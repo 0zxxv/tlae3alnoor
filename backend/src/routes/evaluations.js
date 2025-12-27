@@ -232,14 +232,12 @@ router.get('/:id', (req, res) => {
       return res.status(404).json({ error: 'Evaluation not found' });
     }
 
-    // Get answers with question and option details
+    // Get answers with question details
     const answers = prepare(`
-      SELECT ea.*,
-             eq.question, eq.question_ar, eq.answer_type,
-             eao.option_text, eao.option_text_ar, eao.option_value
+      SELECT ea.id, ea.question_id, ea.answer_type, ea.notes,
+             eq.question, eq.question_ar
       FROM evaluation_answers ea
       LEFT JOIN evaluation_questions eq ON ea.question_id = eq.id
-      LEFT JOIN evaluation_answer_options eao ON ea.selected_option_id = eao.id
       WHERE ea.evaluation_id = ?
     `).all(req.params.id);
 
@@ -266,13 +264,19 @@ router.post('/', (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(evaluationId, student_id, form_id, teacher_id, evaluation_date, notes || '', notes_ar || '');
 
-    // Insert answers
+    // Insert answers - now with answer_type (completed, needs_followup, notes) and optional notes
     if (answers && answers.length > 0) {
       answers.forEach(answer => {
         prepare(`
-          INSERT INTO evaluation_answers (id, evaluation_id, question_id, selected_option_id)
-          VALUES (?, ?, ?, ?)
-        `).run(uuidv4(), evaluationId, answer.question_id, answer.selected_option_id);
+          INSERT INTO evaluation_answers (id, evaluation_id, question_id, answer_type, notes)
+          VALUES (?, ?, ?, ?, ?)
+        `).run(
+          uuidv4(), 
+          evaluationId, 
+          answer.question_id, 
+          answer.answer_type || 'completed',
+          answer.notes || null
+        );
       });
     }
 

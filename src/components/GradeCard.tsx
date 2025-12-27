@@ -10,9 +10,9 @@ interface GradeCardProps {
 }
 
 export const GradeCard: React.FC<GradeCardProps> = ({ grade }) => {
-  const { language, isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
 
-  const subject = language === 'ar' ? grade.subjectAr : grade.subject;
+  const subject = grade.subjectAr || grade.subject;
   const percentage = Math.round((grade.score / grade.maxScore) * 100);
 
   const getGradeColor = () => {
@@ -31,7 +31,7 @@ export const GradeCard: React.FC<GradeCardProps> = ({ grade }) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+    return date.toLocaleDateString('ar-SA', {
       month: 'short',
       day: 'numeric',
     });

@@ -115,14 +115,14 @@ export const translations = {
     announcements: "الإعلانات",
     chat: "المحادثات",
     events: "الفعاليات",
-    students: "الطلاب",
+    students: "الطالبات",
     slideshow: "عرض الصور",
     settings: "الإعدادات",
     profile: "الملف الشخصي",
     
     // Teacher
     addGrade: "إضافة درجة",
-    selectStudent: "اختر الطالب",
+    selectStudent: "اختر الطالبة",
     selectSubject: "اختر المادة",
     score: "الدرجة",
     maxScore: "الدرجة القصوى",
@@ -141,14 +141,14 @@ export const translations = {
     
     // Admin
     addEvent: "إضافة فعالية",
-    addStudent: "إضافة طالب",
-    deleteStudent: "حذف طالب",
+    addStudent: "إضافة طالبة",
+    deleteStudent: "حذف طالبة",
     addSlide: "إضافة صورة",
     eventTitle: "عنوان الفعالية",
     eventDescription: "وصف الفعالية",
     eventDate: "تاريخ الفعالية",
-    studentName: "اسم الطالب",
-    studentGrade: "صف الطالب",
+    studentName: "اسم الطالبة",
+    studentGrade: "صف الطالبة",
     
     // Chat
     typeMessage: "اكتب رسالة...",

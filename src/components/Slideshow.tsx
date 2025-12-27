@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { SlideShowImage } from '../types';
 import { colors } from '../theme/colors';
-import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const SLIDE_WIDTH = width;
@@ -29,7 +28,6 @@ export const Slideshow: React.FC<SlideshowProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
-  const { language } = useLanguage();
 
   useEffect(() => {
     if (!autoPlay || images.length <= 1) return;
@@ -73,7 +71,7 @@ export const Slideshow: React.FC<SlideshowProps> = ({
             <Image source={{ uri: image.uri }} style={styles.image} />
             <View style={styles.overlay}>
               <Text style={styles.slideTitle}>
-                {language === 'ar' ? image.titleAr : image.title}
+                {image.titleAr || image.title}
               </Text>
             </View>
           </View>

@@ -6,40 +6,36 @@ import {
   ScrollView,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
-import { Header, Button, Input, AnnouncementCard } from '../../components';
+import { Header, Button, AnnouncementCard } from '../../components';
 import { mockAnnouncements } from '../../data/mockData';
 import { Announcement } from '../../types';
 
 export const TeacherAnnouncements: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>(mockAnnouncements);
   const [modalVisible, setModalVisible] = useState(false);
-  const [title, setTitle] = useState('');
   const [titleAr, setTitleAr] = useState('');
-  const [content, setContent] = useState('');
   const [contentAr, setContentAr] = useState('');
 
   const handleSendAnnouncement = () => {
-    if (!title || !content) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields'
-      );
+    if (!titleAr || !contentAr) {
+      Alert.alert('خطأ', 'يرجى ملء جميع الحقول');
       return;
     }
 
     const newAnnouncement: Announcement = {
       id: `ann${Date.now()}`,
-      title,
-      titleAr: titleAr || title,
-      content,
-      contentAr: contentAr || content,
+      title: titleAr,
+      titleAr: titleAr,
+      content: contentAr,
+      contentAr: contentAr,
       date: new Date().toISOString().split('T')[0],
       authorId: user?.id || '',
       authorName: user?.name || '',
@@ -47,15 +43,10 @@ export const TeacherAnnouncements: React.FC = () => {
     };
 
     setAnnouncements([newAnnouncement, ...announcements]);
-    Alert.alert(
-      language === 'ar' ? 'نجاح' : 'Success',
-      language === 'ar' ? 'تم إرسال الإعلان بنجاح' : 'Announcement sent successfully'
-    );
+    Alert.alert('نجاح', 'تم إرسال الإعلان بنجاح');
 
     // Reset form
-    setTitle('');
     setTitleAr('');
-    setContent('');
     setContentAr('');
     setModalVisible(false);
   };
@@ -99,38 +90,22 @@ export const TeacherAnnouncements: React.FC = () => {
                 </Text>
               </View>
 
-              <Input
-                label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
-                value={title}
-                onChangeText={setTitle}
-                placeholder={language === 'ar' ? 'أدخل العنوان' : 'Enter title'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'العنوان (عربي)' : 'Title (Arabic)'}
+              <TextInput
+                style={[styles.input, styles.inputRTL]}
+                placeholder="العنوان"
                 value={titleAr}
                 onChangeText={setTitleAr}
-                placeholder={language === 'ar' ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                placeholderTextColor={colors.textSecondary}
               />
 
-              <Input
-                label={language === 'ar' ? 'المحتوى (إنجليزي)' : 'Content (English)'}
-                value={content}
-                onChangeText={setContent}
-                placeholder={language === 'ar' ? 'أدخل المحتوى' : 'Enter content'}
-                multiline
-                numberOfLines={4}
-                style={styles.textArea}
-              />
-
-              <Input
-                label={language === 'ar' ? 'المحتوى (عربي)' : 'Content (Arabic)'}
+              <TextInput
+                style={[styles.input, styles.inputRTL, styles.textArea]}
+                placeholder="المحتوى"
                 value={contentAr}
                 onChangeText={setContentAr}
-                placeholder={language === 'ar' ? 'أدخل المحتوى بالعربية' : 'Enter content in Arabic'}
                 multiline
                 numberOfLines={4}
-                style={styles.textArea}
+                placeholderTextColor={colors.textSecondary}
               />
 
               <View style={styles.modalButtons}>
@@ -204,6 +179,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.card,
+  },
+  inputRTL: {
+    textAlign: 'right',
   },
   textArea: {
     minHeight: 100,

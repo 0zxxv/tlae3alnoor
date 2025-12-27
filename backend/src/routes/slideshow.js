@@ -36,20 +36,24 @@ router.get('/:id', (req, res) => {
 
 // Create slide
 router.post('/', (req, res) => {
-  const { uri, title, title_ar, display_order, is_active } = req.body;
+  const { uri, image_url, title, title_ar, display_order, is_active } = req.body;
+  const slideUri = uri || image_url;
+  const slideTitle = title || title_ar;
+  const slideTitleAr = title_ar || title;
   
-  if (!uri || !title || !title_ar) {
-    return res.status(400).json({ error: 'URI, title, and title_ar are required' });
+  if (!slideUri || !slideTitle) {
+    return res.status(400).json({ error: 'Image and title are required' });
   }
 
   try {
     const id = uuidv4();
-    const order = display_order || (prepare('SELECT MAX(display_order) as max FROM slideshow').get().max || 0) + 1;
+    const maxOrder = prepare('SELECT MAX(display_order) as max FROM slideshow').get();
+    const order = display_order || (maxOrder?.max || 0) + 1;
     
     prepare(`
-      INSERT INTO slideshow (id, uri, title, title_ar, display_order, is_active) 
+      INSERT INTO slideshow (id, image_url, title, title_ar, display_order, is_active) 
       VALUES (?, ?, ?, ?, ?, ?)
-    `).run(id, uri, title, title_ar, order, is_active !== false ? 1 : 0);
+    `).run(id, slideUri, slideTitle, slideTitleAr, order, is_active !== false ? 1 : 0);
 
     const newSlide = prepare('SELECT * FROM slideshow WHERE id = ?').get(id);
     res.status(201).json(newSlide);
@@ -61,7 +65,8 @@ router.post('/', (req, res) => {
 
 // Update slide
 router.put('/:id', (req, res) => {
-  const { uri, title, title_ar, display_order, is_active } = req.body;
+  const { uri, image_url, title, title_ar, display_order, is_active } = req.body;
+  const slideUri = uri || image_url;
   
   try {
     const existing = prepare('SELECT * FROM slideshow WHERE id = ?').get(req.params.id);
@@ -71,10 +76,10 @@ router.put('/:id', (req, res) => {
 
     prepare(`
       UPDATE slideshow 
-      SET uri = ?, title = ?, title_ar = ?, display_order = ?, is_active = ?
+      SET image_url = ?, title = ?, title_ar = ?, display_order = ?, is_active = ?
       WHERE id = ?
     `).run(
-      uri || existing.uri,
+      slideUri || existing.image_url,
       title || existing.title,
       title_ar || existing.title_ar,
       display_order !== undefined ? display_order : existing.display_order,

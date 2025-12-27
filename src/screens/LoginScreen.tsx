@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,14 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
-import { LanguageToggle } from '../components';
 import { UserRole } from '../types';
 
 const { width } = Dimensions.get('window');
@@ -20,12 +21,24 @@ const { width } = Dimensions.get('window');
 export const LoginScreen: React.FC = () => {
   const { t, isRTL } = useLanguage();
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
   const roles: { role: UserRole; icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
     { role: 'teacher', icon: 'school', label: t('teacher') },
     { role: 'parent', icon: 'people', label: t('parent') },
     { role: 'admin', icon: 'shield-checkmark', label: t('admin') },
   ];
+
+  const handleLogin = async (role: UserRole) => {
+    setLoading(true);
+    try {
+      await login(role);
+    } catch (error) {
+      Alert.alert('خطأ', 'فشل تسجيل الدخول. تأكد من اتصال الخادم.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -34,9 +47,7 @@ export const LoginScreen: React.FC = () => {
       <View style={styles.decorativeCircle2} />
       
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.header}>
-          <LanguageToggle />
-        </View>
+        <View style={styles.header} />
 
         <View style={styles.content}>
           <View style={styles.logoContainer}>
@@ -46,9 +57,7 @@ export const LoginScreen: React.FC = () => {
               resizeMode="contain"
             />
             <Text style={styles.appName}>{t('appName')}</Text>
-            <Text style={styles.tagline}>
-              {isRTL ? 'تعليم بلا حدود' : 'Education Without Limits'}
-            </Text>
+            <Text style={styles.tagline}>تعليم بلا حدود</Text>
           </View>
 
           <View style={styles.roleSection}>
@@ -56,21 +65,25 @@ export const LoginScreen: React.FC = () => {
               {t('selectRole')}
             </Text>
 
-            <View style={styles.rolesGrid}>
-              {roles.map(({ role, icon, label }) => (
-                <TouchableOpacity
-                  key={role}
-                  style={styles.roleCard}
-                  onPress={() => login(role)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.roleIcon}>
-                    <Ionicons name={icon} size={32} color={colors.primary} />
-                  </View>
-                  <Text style={styles.roleText}>{label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {loading ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : (
+              <View style={styles.rolesGrid}>
+                {roles.map(({ role, icon, label }) => (
+                  <TouchableOpacity
+                    key={role}
+                    style={styles.roleCard}
+                    onPress={() => handleLogin(role)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.roleIcon}>
+                      <Ionicons name={icon} size={32} color={colors.primary} />
+                    </View>
+                    <Text style={styles.roleText}>{label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </SafeAreaView>

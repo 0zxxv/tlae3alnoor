@@ -17,18 +17,11 @@ import { colors } from '../../theme/colors';
 import { Header } from '../../components';
 import { evaluationsApi } from '../../services/api';
 
-interface AnswerOption {
-  option_text: string;
-  option_text_ar: string;
-  option_value: number;
-}
-
 interface Question {
   id?: string;
   question: string;
   question_ar: string;
   answer_type: string;
-  options: AnswerOption[];
 }
 
 interface EvaluationForm {
@@ -41,67 +34,21 @@ interface EvaluationForm {
   questions?: Question[];
 }
 
-const ANSWER_TYPES = [
-  { id: 'pass_fail', label: 'Pass / Fail', labelAr: 'ناجح / راسب' },
-  { id: 'scale_3', label: '3-Point Scale', labelAr: 'مقياس 3 نقاط' },
-  { id: 'scale_4', label: '4-Point Scale', labelAr: 'مقياس 4 نقاط' },
-  { id: 'scale_5', label: '5-Point Scale', labelAr: 'مقياس 5 نقاط' },
-];
-
-const getDefaultOptions = (type: string): AnswerOption[] => {
-  switch (type) {
-    case 'pass_fail':
-      return [
-        { option_text: 'Pass', option_text_ar: 'ناجح', option_value: 1 },
-        { option_text: 'Fail', option_text_ar: 'راسب', option_value: 0 },
-      ];
-    case 'scale_3':
-      return [
-        { option_text: 'Excellent', option_text_ar: 'ممتاز', option_value: 3 },
-        { option_text: 'Good', option_text_ar: 'جيد', option_value: 2 },
-        { option_text: 'Needs Improvement', option_text_ar: 'يحتاج تحسين', option_value: 1 },
-      ];
-    case 'scale_4':
-      return [
-        { option_text: 'Excellent', option_text_ar: 'ممتاز', option_value: 4 },
-        { option_text: 'Very Good', option_text_ar: 'جيد جداً', option_value: 3 },
-        { option_text: 'Good', option_text_ar: 'جيد', option_value: 2 },
-        { option_text: 'Needs Improvement', option_text_ar: 'يحتاج تحسين', option_value: 1 },
-      ];
-    case 'scale_5':
-      return [
-        { option_text: 'Excellent', option_text_ar: 'ممتاز', option_value: 5 },
-        { option_text: 'Very Good', option_text_ar: 'جيد جداً', option_value: 4 },
-        { option_text: 'Good', option_text_ar: 'جيد', option_value: 3 },
-        { option_text: 'Fair', option_text_ar: 'مقبول', option_value: 2 },
-        { option_text: 'Needs Improvement', option_text_ar: 'يحتاج تحسين', option_value: 1 },
-      ];
-    default:
-      return [];
-  }
-};
-
 export const AdminEvaluationForms: React.FC = () => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL } = useLanguage();
   const [forms, setForms] = useState<EvaluationForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [questionModalVisible, setQuestionModalVisible] = useState(false);
-  const [selectedForm, setSelectedForm] = useState<EvaluationForm | null>(null);
 
-  // Form states
-  const [formName, setFormName] = useState('');
+  // Form states - Arabic only
   const [formNameAr, setFormNameAr] = useState('');
-  const [formDesc, setFormDesc] = useState('');
   const [formDescAr, setFormDescAr] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  // Question states
-  const [questionText, setQuestionText] = useState('');
+  // Question states - Arabic only
   const [questionTextAr, setQuestionTextAr] = useState('');
-  const [answerType, setAnswerType] = useState('pass_fail');
-  const [customOptions, setCustomOptions] = useState<AnswerOption[]>([]);
 
   const fetchForms = useCallback(async () => {
     try {
@@ -125,37 +72,25 @@ export const AdminEvaluationForms: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormName('');
     setFormNameAr('');
-    setFormDesc('');
     setFormDescAr('');
     setQuestions([]);
-    setSelectedForm(null);
   };
 
   const resetQuestionForm = () => {
-    setQuestionText('');
     setQuestionTextAr('');
-    setAnswerType('pass_fail');
-    setCustomOptions([]);
   };
 
   const handleAddQuestion = () => {
-    if (!questionText || !questionTextAr) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى إدخال نص السؤال' : 'Please enter question text'
-      );
+    if (!questionTextAr) {
+      Alert.alert('خطأ', 'يرجى إدخال نص السؤال');
       return;
     }
 
-    const options = customOptions.length > 0 ? customOptions : getDefaultOptions(answerType);
-    
     const newQuestion: Question = {
-      question: questionText,
+      question: questionTextAr,
       question_ar: questionTextAr,
-      answer_type: answerType,
-      options: options,
+      answer_type: 'fixed_3', // All questions have the same 3 answer types
     };
 
     setQuestions([...questions, newQuestion]);
@@ -168,57 +103,48 @@ export const AdminEvaluationForms: React.FC = () => {
   };
 
   const handleSubmitForm = async () => {
-    if (!formName || !formNameAr) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى إدخال اسم النموذج' : 'Please enter form name'
-      );
+    if (!formNameAr) {
+      Alert.alert('خطأ', 'يرجى إدخال اسم النموذج');
       return;
     }
 
     if (questions.length === 0) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى إضافة سؤال واحد على الأقل' : 'Please add at least one question'
-      );
+      Alert.alert('خطأ', 'يرجى إضافة سؤال واحد على الأقل');
       return;
     }
 
     try {
       await evaluationsApi.createForm({
-        name: formName,
+        name: formNameAr,
         name_ar: formNameAr,
-        description: formDesc,
+        description: formDescAr,
         description_ar: formDescAr,
         questions: questions,
       });
       setModalVisible(false);
       resetForm();
       fetchForms();
-      Alert.alert(
-        language === 'ar' ? 'نجاح' : 'Success',
-        language === 'ar' ? 'تم إنشاء النموذج بنجاح' : 'Form created successfully'
-      );
+      Alert.alert('نجاح', 'تم إنشاء النموذج بنجاح');
     } catch (error: any) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+      Alert.alert('خطأ', error.message);
     }
   };
 
   const handleDeleteForm = (form: EvaluationForm) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar' ? 'هل أنت متأكد من حذف هذا النموذج؟' : 'Are you sure you want to delete this form?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذا النموذج؟',
       [
-        { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: 'إلغاء', style: 'cancel' },
         {
-          text: language === 'ar' ? 'حذف' : 'Delete',
+          text: 'حذف',
           style: 'destructive',
           onPress: async () => {
             try {
               await evaluationsApi.deleteForm(form.id);
               fetchForms();
             } catch (error: any) {
-              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+              Alert.alert('خطأ', error.message);
             }
           },
         },
@@ -230,34 +156,20 @@ export const AdminEvaluationForms: React.FC = () => {
     try {
       const fullForm = await evaluationsApi.getFormById(form.id);
       Alert.alert(
-        language === 'ar' ? fullForm.name_ar : fullForm.name,
+        fullForm.name_ar || fullForm.name,
         fullForm.questions?.map((q: Question, i: number) => 
-          `${i + 1}. ${language === 'ar' ? q.question_ar : q.question}`
-        ).join('\n') || (language === 'ar' ? 'لا توجد أسئلة' : 'No questions')
+          `${i + 1}. ${q.question_ar || q.question}`
+        ).join('\n') || 'لا توجد أسئلة'
       );
     } catch (error) {
       console.error('Error viewing form:', error);
     }
   };
 
-  const addCustomOption = () => {
-    setCustomOptions([...customOptions, { option_text: '', option_text_ar: '', option_value: customOptions.length + 1 }]);
-  };
-
-  const updateCustomOption = (index: number, field: keyof AnswerOption, value: string | number) => {
-    const updated = [...customOptions];
-    updated[index] = { ...updated[index], [field]: value };
-    setCustomOptions(updated);
-  };
-
-  const removeCustomOption = (index: number) => {
-    setCustomOptions(customOptions.filter((_, i) => i !== index));
-  };
-
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'نماذج التقييم' : 'Evaluation Forms'} showBack />
+        <Header title="نماذج التقييم" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -267,7 +179,7 @@ export const AdminEvaluationForms: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'نماذج التقييم' : 'Evaluation Forms'} showBack />
+      <Header title="نماذج التقييم" />
       
       <ScrollView
         style={styles.content}
@@ -281,10 +193,16 @@ export const AdminEvaluationForms: React.FC = () => {
           }}
         >
           <Ionicons name="add-circle" size={24} color={colors.textLight} />
-          <Text style={styles.addButtonText}>
-            {language === 'ar' ? 'إنشاء نموذج جديد' : 'Create New Form'}
-          </Text>
+          <Text style={styles.addButtonText}>إنشاء نموذج جديد</Text>
         </TouchableOpacity>
+
+        {/* Info about answer types */}
+        <View style={styles.infoCard}>
+          <Ionicons name="information-circle" size={20} color={colors.primary} />
+          <Text style={styles.infoText}>
+            كل سؤال له 3 خيارات إجابة: أنجزت ✓ | تحتاج متابعة ⚠ | ملاحظات 📝
+          </Text>
+        </View>
 
         {forms.map((form) => (
           <View key={form.id} style={styles.formCard}>
@@ -294,11 +212,11 @@ export const AdminEvaluationForms: React.FC = () => {
               </View>
               <View style={styles.formInfo}>
                 <Text style={[styles.formName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? form.name_ar : form.name}
+                  {form.name_ar || form.name}
                 </Text>
-                {form.description && (
+                {form.description_ar && (
                   <Text style={[styles.formDesc, isRTL && styles.textRTL]}>
-                    {language === 'ar' ? form.description_ar : form.description}
+                    {form.description_ar || form.description}
                   </Text>
                 )}
               </View>
@@ -321,9 +239,7 @@ export const AdminEvaluationForms: React.FC = () => {
         ))}
 
         {forms.length === 0 && (
-          <Text style={styles.emptyText}>
-            {language === 'ar' ? 'لا توجد نماذج تقييم' : 'No evaluation forms found'}
-          </Text>
+          <Text style={styles.emptyText}>لا توجد نماذج تقييم</Text>
         )}
       </ScrollView>
 
@@ -334,44 +250,25 @@ export const AdminEvaluationForms: React.FC = () => {
             <TouchableOpacity onPress={() => setModalVisible(false)}>
               <Ionicons name="close" size={28} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>
-              {language === 'ar' ? 'إنشاء نموذج تقييم' : 'Create Evaluation Form'}
-            </Text>
+            <Text style={styles.modalTitle}>إنشاء نموذج تقييم</Text>
             <TouchableOpacity onPress={handleSubmitForm}>
-              <Text style={styles.saveText}>{language === 'ar' ? 'حفظ' : 'Save'}</Text>
+              <Text style={styles.saveText}>حفظ</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent} keyboardShouldPersistTaps="handled">
-            <Text style={styles.sectionTitle}>
-              {language === 'ar' ? 'معلومات النموذج' : 'Form Information'}
-            </Text>
+            <Text style={styles.sectionTitle}>معلومات النموذج</Text>
             
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'اسم النموذج (إنجليزي)' : 'Form Name (English)'}
-              value={formName}
-              onChangeText={setFormName}
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'اسم النموذج (عربي)' : 'Form Name (Arabic)'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="اسم النموذج"
               value={formNameAr}
               onChangeText={setFormNameAr}
               placeholderTextColor={colors.textSecondary}
             />
             <TextInput
-              style={[styles.input, styles.textArea, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الوصف (إنجليزي)' : 'Description (English)'}
-              value={formDesc}
-              onChangeText={setFormDesc}
-              multiline
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, styles.textArea, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)'}
+              style={[styles.input, styles.textArea, styles.inputRTL]}
+              placeholder="الوصف (اختياري)"
               value={formDescAr}
               onChangeText={setFormDescAr}
               multiline
@@ -380,18 +277,14 @@ export const AdminEvaluationForms: React.FC = () => {
 
             <View style={styles.questionsSection}>
               <View style={styles.questionsSectionHeader}>
-                <Text style={styles.sectionTitle}>
-                  {language === 'ar' ? 'الأسئلة' : 'Questions'} ({questions.length})
-                </Text>
+                <Text style={styles.sectionTitle}>الأسئلة ({questions.length})</Text>
                 <TouchableOpacity
                   style={styles.addQuestionButton}
                   onPress={() => setQuestionModalVisible(true)}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="add" size={20} color={colors.textLight} />
-                  <Text style={styles.addQuestionText}>
-                    {language === 'ar' ? 'إضافة سؤال' : 'Add Question'}
-                  </Text>
+                  <Text style={styles.addQuestionText}>إضافة سؤال</Text>
                 </TouchableOpacity>
               </View>
 
@@ -400,12 +293,7 @@ export const AdminEvaluationForms: React.FC = () => {
                   <View style={styles.questionInfo}>
                     <Text style={styles.questionNumber}>{index + 1}</Text>
                     <View style={styles.questionDetails}>
-                      <Text style={styles.questionText}>
-                        {language === 'ar' ? q.question_ar : q.question}
-                      </Text>
-                      <Text style={styles.questionType}>
-                        {ANSWER_TYPES.find(t => t.id === q.answer_type)?.[language === 'ar' ? 'labelAr' : 'label']}
-                      </Text>
+                      <Text style={styles.questionText}>{q.question_ar}</Text>
                     </View>
                   </View>
                   <TouchableOpacity onPress={() => handleRemoveQuestion(index)}>
@@ -418,53 +306,33 @@ export const AdminEvaluationForms: React.FC = () => {
         </View>
       </Modal>
 
-      {/* Add Question Modal - Separate from form modal */}
+      {/* Add Question Modal */}
       <Modal visible={questionModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.questionModalContent}>
-            <Text style={styles.modalTitle}>
-              {language === 'ar' ? 'إضافة سؤال' : 'Add Question'}
-            </Text>
+            <Text style={styles.modalTitle}>إضافة سؤال</Text>
 
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'نص السؤال (إنجليزي)' : 'Question Text (English)'}
-              value={questionText}
-              onChangeText={setQuestionText}
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'نص السؤال (عربي)' : 'Question Text (Arabic)'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="نص السؤال"
               value={questionTextAr}
               onChangeText={setQuestionTextAr}
               placeholderTextColor={colors.textSecondary}
             />
 
-            <Text style={styles.label}>
-              {language === 'ar' ? 'نوع الإجابة' : 'Answer Type'}
-            </Text>
-            <View style={styles.answerTypes}>
-              {ANSWER_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  style={[
-                    styles.answerTypeButton,
-                    answerType === type.id && styles.answerTypeSelected,
-                  ]}
-                  onPress={() => {
-                    setAnswerType(type.id);
-                    setCustomOptions([]);
-                  }}
-                >
-                  <Text style={[
-                    styles.answerTypeText,
-                    answerType === type.id && styles.answerTypeTextSelected,
-                  ]}>
-                    {language === 'ar' ? type.labelAr : type.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.answerTypesInfo}>
+              <Text style={styles.answerTypesLabel}>خيارات الإجابة:</Text>
+              <View style={styles.answerTypesList}>
+                <View style={[styles.answerTypeTag, { backgroundColor: colors.success }]}>
+                  <Text style={styles.answerTypeTagText}>أنجزت ✓</Text>
+                </View>
+                <View style={[styles.answerTypeTag, { backgroundColor: colors.warning }]}>
+                  <Text style={styles.answerTypeTagText}>تحتاج متابعة ⚠</Text>
+                </View>
+                <View style={[styles.answerTypeTag, { backgroundColor: colors.textSecondary }]}>
+                  <Text style={styles.answerTypeTagText}>ملاحظات 📝</Text>
+                </View>
+              </View>
             </View>
 
             <View style={styles.modalButtons}>
@@ -475,17 +343,13 @@ export const AdminEvaluationForms: React.FC = () => {
                   resetQuestionForm();
                 }}
               >
-                <Text style={styles.cancelButtonText}>
-                  {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                </Text>
+                <Text style={styles.cancelButtonText}>إلغاء</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.submitButton]}
                 onPress={handleAddQuestion}
               >
-                <Text style={styles.submitButtonText}>
-                  {language === 'ar' ? 'إضافة' : 'Add'}
-                </Text>
+                <Text style={styles.submitButtonText}>إضافة</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -523,6 +387,21 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.secondary,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 8,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.text,
+    textAlign: 'right',
   },
   formCard: {
     backgroundColor: colors.card,
@@ -611,6 +490,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 12,
     marginTop: 16,
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,
@@ -684,11 +564,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     fontWeight: '500',
-  },
-  questionType: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
+    textAlign: 'right',
   },
   modalOverlay: {
     flex: 1,
@@ -703,39 +579,33 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '80%',
   },
-  label: {
+  answerTypesInfo: {
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  answerTypesLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 8,
-    marginTop: 8,
+    textAlign: 'right',
   },
-  answerTypes: {
+  answerTypesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 16,
+    justifyContent: 'flex-end',
   },
-  answerTypeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
+  answerTypeTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
-  answerTypeSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  answerTypeText: {
-    fontSize: 12,
-    color: colors.text,
-  },
-  answerTypeTextSelected: {
+  answerTypeTagText: {
     color: colors.textLight,
+    fontSize: 12,
+    fontWeight: '600',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -764,4 +634,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

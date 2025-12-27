@@ -1,21 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
-import { LanguageToggle } from '../../components';
 import { Student } from '../../types';
 
 export const SelectChildScreen: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
-  const { getChildrenForParent, selectChild, logout } = useAuth();
+  const { t, isRTL } = useLanguage();
+  const { getChildrenForParent, selectChild, logout, refreshChildren, childrenList } = useAuth();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadChildren = async () => {
+      await refreshChildren();
+      setLoading(false);
+    };
+    loadChildren();
+  }, []);
 
   const children = getChildrenForParent();
 
@@ -31,7 +40,7 @@ export const SelectChildScreen: React.FC = () => {
       
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <LanguageToggle />
+          <View />
           <TouchableOpacity onPress={logout} style={styles.logoutButton}>
             <Ionicons name="log-out-outline" size={20} color={colors.primary} />
           </TouchableOpacity>
@@ -46,37 +55,46 @@ export const SelectChildScreen: React.FC = () => {
               {t('selectChild')}
             </Text>
             <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-              {language === 'ar'
-                ? 'اختر طفلك لعرض معلوماته'
-                : 'Choose your child to view their information'}
+              اختر طفلك لعرض معلوماته
             </Text>
           </View>
 
-          <View style={styles.childrenGrid}>
-            {children.map((child) => (
-              <TouchableOpacity
-                key={child.id}
-                style={styles.childCard}
-                onPress={() => handleSelectChild(child)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.childAvatarContainer}>
-                  <View style={styles.childAvatarPlaceholder}>
-                    <Ionicons name="person" size={40} color={colors.textLight} />
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : children.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="person-outline" size={60} color={colors.textSecondary} />
+              <Text style={styles.emptyText}>لا يوجد طلاب مسجلين</Text>
+            </View>
+          ) : (
+            <View style={styles.childrenGrid}>
+              {children.map((child) => (
+                <TouchableOpacity
+                  key={child.id}
+                  style={styles.childCard}
+                  onPress={() => handleSelectChild(child)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.childAvatarContainer}>
+                    <View style={styles.childAvatarPlaceholder}>
+                      <Ionicons name="person" size={40} color={colors.textLight} />
+                    </View>
                   </View>
-                </View>
-                <Text style={[styles.childName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? child.nameAr : child.name}
-                </Text>
-                <View style={styles.gradeRow}>
-                  <Ionicons name="school-outline" size={14} color={colors.primary} />
-                  <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
-                    {language === 'ar' ? child.gradeAr : child.grade}
+                  <Text style={[styles.childName, isRTL && styles.textRTL]}>
+                    {child.nameAr || child.name}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <View style={styles.gradeRow}>
+                    <Ionicons name="school-outline" size={14} color={colors.primary} />
+                    <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
+                      {child.gradeAr || child.grade}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -135,6 +153,21 @@ const styles = StyleSheet.create({
   },
   textRTL: {
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: colors.textSecondary,
   },
   childrenGrid: {
     flexDirection: 'row',

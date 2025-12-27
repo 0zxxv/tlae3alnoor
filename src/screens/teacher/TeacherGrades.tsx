@@ -16,7 +16,7 @@ import { mockStudents, mockGrades, subjects } from '../../data/mockData';
 import { Student, Grade } from '../../types';
 
 export const TeacherGrades: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [score, setScore] = useState('');
@@ -26,10 +26,7 @@ export const TeacherGrades: React.FC = () => {
 
   const handleAddGrade = () => {
     if (!selectedStudent || !selectedSubject || !score) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields'
-      );
+      Alert.alert('خطأ', 'يرجى ملء جميع الحقول');
       return;
     }
 
@@ -46,10 +43,7 @@ export const TeacherGrades: React.FC = () => {
     };
 
     setGrades([...grades, newGrade]);
-    Alert.alert(
-      language === 'ar' ? 'نجاح' : 'Success',
-      language === 'ar' ? 'تمت إضافة الدرجة بنجاح' : 'Grade added successfully'
-    );
+    Alert.alert('نجاح', 'تمت إضافة الدرجة بنجاح');
     
     // Reset form
     setSelectedStudent(null);
@@ -87,10 +81,10 @@ export const TeacherGrades: React.FC = () => {
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.nameAr : student.name}
+                  {student.nameAr || student.name}
                 </Text>
                 <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.gradeAr : student.grade}
+                  {student.gradeAr || student.grade}
                 </Text>
               </View>
             </View>
@@ -102,7 +96,7 @@ export const TeacherGrades: React.FC = () => {
                     <View style={[styles.gradeSubjectRow, isRTL && styles.gradeSubjectRowRTL]}>
                       <Ionicons name="book-outline" size={14} color={colors.textSecondary} />
                       <Text style={[styles.gradeSubject, isRTL && styles.textRTL]}>
-                        {language === 'ar' ? grade.subjectAr : grade.subject}
+                        {grade.subjectAr || grade.subject}
                       </Text>
                     </View>
                     <View style={styles.gradeScore}>
@@ -114,7 +108,7 @@ export const TeacherGrades: React.FC = () => {
                 ))
               ) : (
                 <Text style={[styles.noGrades, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? 'لا توجد درجات' : 'No grades yet'}
+                  لا توجد درجات
                 </Text>
               )}
             </View>
@@ -162,7 +156,7 @@ export const TeacherGrades: React.FC = () => {
                       selectedStudent?.id === student.id && styles.selectionTextActive,
                     ]}
                   >
-                    {language === 'ar' ? student.nameAr : student.name}
+                    {student.nameAr || student.name}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -192,7 +186,7 @@ export const TeacherGrades: React.FC = () => {
                       selectedSubject === subject.id && styles.selectionTextActive,
                     ]}
                   >
-                    {language === 'ar' ? subject.nameAr : subject.name}
+                    {subject.nameAr || subject.name}
                   </Text>
                 </TouchableOpacity>
               ))}

@@ -15,20 +15,20 @@ import { Header, Card } from '../../components';
 import { mockStudents, mockAnnouncements } from '../../data/mockData';
 
 export const TeacherDashboard: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { user } = useAuth();
   const navigation = useNavigation<any>();
 
   const quickActions = [
-    { id: 'grades', title: t('addGrade'), titleAr: 'إضافة درجة', icon: 'create-outline' as const, screen: 'TeacherGrades' },
-    { id: 'announcements', title: t('sendAnnouncement'), titleAr: 'إرسال إعلان', icon: 'megaphone-outline' as const, screen: 'TeacherAnnouncements' },
-    { id: 'chat', title: t('chat'), titleAr: 'المحادثات', icon: 'chatbubbles-outline' as const, screen: 'TeacherChat' },
+    { id: 'grades', titleAr: 'إضافة درجة', icon: 'create-outline' as const, screen: 'TeacherGrades' },
+    { id: 'announcements', titleAr: 'إرسال إعلان', icon: 'megaphone-outline' as const, screen: 'TeacherAnnouncements' },
+    { id: 'chat', titleAr: 'المحادثات', icon: 'chatbubbles-outline' as const, screen: 'TeacherChat' },
   ];
 
   const stats = [
-    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: 'school-outline' as const },
-    { label: language === 'ar' ? 'الإعلانات' : 'Announcements', value: mockAnnouncements.length, icon: 'megaphone-outline' as const },
-    { label: language === 'ar' ? 'الرسائل' : 'Messages', value: 3, icon: 'mail-outline' as const },
+    { label: 'الطالبات', value: mockStudents.length, icon: 'school-outline' as const },
+    { label: 'الإعلانات', value: mockAnnouncements.length, icon: 'megaphone-outline' as const },
+    { label: 'الرسائل', value: 3, icon: 'mail-outline' as const },
   ];
 
   return (
@@ -48,7 +48,7 @@ export const TeacherDashboard: React.FC = () => {
         </View>
 
         {/* Quick Actions */}
-        <Card title={language === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}>
+        <Card title="إجراءات سريعة" titleAr="إجراءات سريعة">
           <View style={[styles.actionsGrid, isRTL && styles.actionsGridRTL]}>
             {quickActions.map((action) => (
               <TouchableOpacity
@@ -60,35 +60,31 @@ export const TeacherDashboard: React.FC = () => {
                 <View style={styles.actionIcon}>
                   <Ionicons name={action.icon} size={24} color={colors.textLight} />
                 </View>
-                <Text style={styles.actionText}>
-                  {language === 'ar' ? action.titleAr : action.title}
-                </Text>
+                <Text style={styles.actionText}>{action.titleAr}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </Card>
 
         {/* Recent Announcements */}
-        <Card title={language === 'ar' ? 'آخر الإعلانات' : 'Recent Announcements'}>
+        <Card title="آخر الإعلانات" titleAr="آخر الإعلانات">
           {mockAnnouncements.slice(0, 2).map((announcement) => (
             <View key={announcement.id} style={styles.announcementItem}>
               <View style={[styles.announcementRow, isRTL && styles.announcementRowRTL]}>
                 <Ionicons name="megaphone" size={16} color={colors.primary} />
                 <Text style={[styles.announcementTitle, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? announcement.titleAr : announcement.title}
+                  {announcement.titleAr || announcement.title}
                 </Text>
               </View>
               <Text style={[styles.announcementDate, isRTL && styles.textRTL]}>
-                {new Date(announcement.date).toLocaleDateString(
-                  language === 'ar' ? 'ar-SA' : 'en-US'
-                )}
+                {new Date(announcement.date).toLocaleDateString('ar-SA')}
               </Text>
             </View>
           ))}
         </Card>
 
         {/* Students Overview */}
-        <Card title={language === 'ar' ? 'الطلاب' : 'Students'}>
+        <Card title="الطالبات" titleAr="الطالبات">
           {mockStudents.slice(0, 3).map((student) => (
             <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
@@ -96,10 +92,10 @@ export const TeacherDashboard: React.FC = () => {
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.nameAr : student.name}
+                  {student.nameAr || student.name}
                 </Text>
                 <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.gradeAr : student.grade}
+                  {student.gradeAr || student.grade}
                 </Text>
               </View>
             </View>

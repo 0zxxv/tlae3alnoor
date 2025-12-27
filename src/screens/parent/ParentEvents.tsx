@@ -15,14 +15,14 @@ import { mockEvents } from '../../data/mockData';
 type EventFilter = 'all' | 'upcoming' | 'current' | 'previous';
 
 export const ParentEvents: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [filter, setFilter] = useState<EventFilter>('all');
 
-  const filters: { key: EventFilter; label: string; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { key: 'all', label: 'All', labelAr: 'الكل', icon: 'apps' },
-    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادمة', icon: 'time-outline' },
-    { key: 'current', label: 'Current', labelAr: 'حالية', icon: 'play-circle-outline' },
-    { key: 'previous', label: 'Previous', labelAr: 'سابقة', icon: 'checkmark-circle-outline' },
+  const filters: { key: EventFilter; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'all', labelAr: 'الكل', icon: 'apps' },
+    { key: 'upcoming', labelAr: 'قادمة', icon: 'time-outline' },
+    { key: 'current', labelAr: 'حالية', icon: 'play-circle-outline' },
+    { key: 'previous', labelAr: 'سابقة', icon: 'checkmark-circle-outline' },
   ];
 
   const filteredEvents = filter === 'all'
@@ -68,7 +68,7 @@ export const ParentEvents: React.FC = () => {
                   filter === f.key && styles.filterTextActive,
                 ]}
               >
-                {language === 'ar' ? f.labelAr : f.label}
+                {f.labelAr}
               </Text>
             </TouchableOpacity>
           ))}
@@ -83,7 +83,7 @@ export const ParentEvents: React.FC = () => {
           <View style={styles.noData}>
             <Ionicons name="calendar-outline" size={48} color={colors.border} />
             <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
-              {language === 'ar' ? 'لا توجد فعاليات' : 'No events found'}
+              لا توجد فعاليات
             </Text>
           </View>
         )}

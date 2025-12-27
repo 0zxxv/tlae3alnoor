@@ -18,8 +18,8 @@ export const Card: React.FC<CardProps> = ({
   onPress,
   style,
 }) => {
-  const { language, isRTL } = useLanguage();
-  const displayTitle = language === 'ar' && titleAr ? titleAr : title;
+  const { isRTL } = useLanguage();
+  const displayTitle = titleAr || title;
 
   const content = (
     <View style={[styles.card, style]}>
@@ -65,4 +65,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

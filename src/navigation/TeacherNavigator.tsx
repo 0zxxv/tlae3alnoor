@@ -85,7 +85,7 @@ export const TeacherNavigator: React.FC = () => {
         name="Evaluations"
         component={TeacherEvaluations}
         options={{
-          tabBarLabel: 'Evaluate',
+          tabBarLabel: 'تقييم',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'clipboard' : 'clipboard-outline'} 

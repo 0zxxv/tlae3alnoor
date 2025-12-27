@@ -15,22 +15,22 @@ import { Header, Card } from '../../components';
 import { mockStudents, mockEvents, mockSlideshow } from '../../data/mockData';
 
 export const AdminDashboard: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const navigation = useNavigation<any>();
 
   const quickActions = [
-    { id: 'parents', title: 'Parents', titleAr: 'أولياء الأمور', icon: 'people' as const, screen: 'AdminParents' },
-    { id: 'teachers', title: 'Teachers', titleAr: 'المعلمات', icon: 'person' as const, screen: 'AdminTeachers' },
-    { id: 'students', title: t('students'), titleAr: 'الطالبات', icon: 'school' as const, screen: 'AdminStudents' },
-    { id: 'evaluations', title: 'Evaluation Forms', titleAr: 'نماذج التقييم', icon: 'clipboard' as const, screen: 'AdminEvaluationForms' },
-    { id: 'events', title: t('events'), titleAr: 'الفعاليات', icon: 'calendar' as const, screen: 'AdminEvents' },
-    { id: 'slideshow', title: t('slideshow'), titleAr: 'عرض الصور', icon: 'images' as const, screen: 'AdminSlideshow' },
+    { id: 'parents', titleAr: 'أولياء الأمور', icon: 'people' as const, screen: 'AdminParents' },
+    { id: 'teachers', titleAr: 'المعلمات', icon: 'person' as const, screen: 'AdminTeachers' },
+    { id: 'students', titleAr: 'الطالبات', icon: 'school' as const, screen: 'AdminStudents' },
+    { id: 'evaluations', titleAr: 'نماذج التقييم', icon: 'clipboard' as const, screen: 'AdminEvaluationForms' },
+    { id: 'events', titleAr: 'الفعاليات', icon: 'calendar' as const, screen: 'AdminEvents' },
+    { id: 'slideshow', titleAr: 'عرض الصور', icon: 'images' as const, screen: 'AdminSlideshow' },
   ];
 
   const stats = [
-    { label: language === 'ar' ? 'الطلاب' : 'Students', value: mockStudents.length, icon: 'school' as const, color: colors.primary },
-    { label: language === 'ar' ? 'الفعاليات' : 'Events', value: mockEvents.length, icon: 'calendar' as const, color: colors.success },
-    { label: language === 'ar' ? 'الصور' : 'Slides', value: mockSlideshow.length, icon: 'images' as const, color: colors.warning },
+    { label: 'الطالبات', value: mockStudents.length, icon: 'school' as const, color: colors.primary },
+    { label: 'الفعاليات', value: mockEvents.length, icon: 'calendar' as const, color: colors.success },
+    { label: 'الصور', value: mockSlideshow.length, icon: 'images' as const, color: colors.warning },
   ];
 
   return (
@@ -46,12 +46,10 @@ export const AdminDashboard: React.FC = () => {
             resizeMode="contain"
           />
           <Text style={[styles.welcomeText, isRTL && styles.textRTL]}>
-            {language === 'ar' ? 'مرحباً بك في لوحة التحكم' : 'Welcome to Admin Panel'}
+            مرحباً بك في لوحة التحكم
           </Text>
           <Text style={[styles.welcomeSubtext, isRTL && styles.textRTL]}>
-            {language === 'ar'
-              ? 'إدارة الطلاب والفعاليات وعرض الصور'
-              : 'Manage students, events, and slideshow'}
+            إدارة الطالبات والفعاليات وعرض الصور
           </Text>
         </View>
 
@@ -68,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          {language === 'ar' ? 'إدارة سريعة' : 'Quick Management'}
+          إدارة سريعة
         </Text>
         
         <View style={styles.actionsGrid}>
@@ -83,7 +81,7 @@ export const AdminDashboard: React.FC = () => {
                 <Ionicons name={action.icon} size={24} color={colors.primary} />
               </View>
               <Text style={[styles.actionText, isRTL && styles.textRTL]}>
-                {language === 'ar' ? action.titleAr : action.title}
+                {action.titleAr}
               </Text>
               <Ionicons 
                 name={isRTL ? 'chevron-back' : 'chevron-forward'} 
@@ -95,7 +93,7 @@ export const AdminDashboard: React.FC = () => {
         </View>
 
         {/* Recent Activity */}
-        <Card title={language === 'ar' ? 'الطلاب المسجلين' : 'Registered Students'}>
+        <Card title="الطالبات المسجلات" titleAr="الطالبات المسجلات">
           {mockStudents.slice(0, 3).map((student) => (
             <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
@@ -103,10 +101,10 @@ export const AdminDashboard: React.FC = () => {
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.nameAr : student.name}
+                  {student.nameAr || student.name}
                 </Text>
                 <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.gradeAr : student.grade}
+                  {student.gradeAr || student.grade}
                 </Text>
               </View>
             </View>
@@ -114,19 +112,17 @@ export const AdminDashboard: React.FC = () => {
         </Card>
 
         {/* Upcoming Events Preview */}
-        <Card title={language === 'ar' ? 'الفعاليات القادمة' : 'Upcoming Events'}>
+        <Card title="الفعاليات القادمة" titleAr="الفعاليات القادمة">
           {mockEvents.filter(e => e.type === 'upcoming').slice(0, 2).map((event) => (
             <View key={event.id} style={styles.eventItem}>
               <View style={[styles.eventRow, isRTL && styles.eventRowRTL]}>
                 <Ionicons name="calendar-outline" size={16} color={colors.primary} />
                 <Text style={[styles.eventTitle, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? event.titleAr : event.title}
+                  {event.titleAr || event.title}
                 </Text>
               </View>
               <Text style={[styles.eventDate, isRTL && styles.textRTL]}>
-                {new Date(event.date).toLocaleDateString(
-                  language === 'ar' ? 'ar-SA' : 'en-US'
-                )}
+                {new Date(event.date).toLocaleDateString('ar-SA')}
               </Text>
             </View>
           ))}

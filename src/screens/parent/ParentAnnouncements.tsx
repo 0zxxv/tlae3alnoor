@@ -12,7 +12,7 @@ import { Header, AnnouncementCard } from '../../components';
 import { mockAnnouncements } from '../../data/mockData';
 
 export const ParentAnnouncements: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
 
   return (
     <View style={styles.container}>
@@ -27,9 +27,7 @@ export const ParentAnnouncements: React.FC = () => {
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {language === 'ar'
-            ? 'ابقَ على اطلاع بآخر الأخبار والتحديثات'
-            : 'Stay updated with the latest news and updates'}
+          ابقَ على اطلاع بآخر الأخبار والتحديثات
         </Text>
 
         {mockAnnouncements.map((announcement) => (
@@ -71,6 +69,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 20,
+    textAlign: 'right',
   },
   textRTL: {
     textAlign: 'right',

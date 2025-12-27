@@ -11,10 +11,10 @@ interface EventCardProps {
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
-  const { language, isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
 
-  const title = language === 'ar' ? event.titleAr : event.title;
-  const description = language === 'ar' ? event.descriptionAr : event.description;
+  const title = event.titleAr || event.title;
+  const description = event.descriptionAr || event.description;
 
   const getTypeColor = () => {
     switch (event.type) {
@@ -32,11 +32,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
   const getTypeLabel = () => {
     switch (event.type) {
       case 'upcoming':
-        return language === 'ar' ? 'قادم' : 'Upcoming';
+        return 'قادم';
       case 'current':
-        return language === 'ar' ? 'حالي' : 'Current';
+        return 'حالي';
       case 'previous':
-        return language === 'ar' ? 'سابق' : 'Previous';
+        return 'سابق';
       default:
         return '';
     }
@@ -57,7 +57,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+    return date.toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

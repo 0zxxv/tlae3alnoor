@@ -8,6 +8,7 @@ import {
   Modal,
   ActivityIndicator,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
@@ -16,12 +17,13 @@ import { colors } from '../../theme/colors';
 import { Header } from '../../components';
 import { evaluationsApi } from '../../services/api';
 
+const { width } = Dimensions.get('window');
+
 interface EvaluationAnswer {
   question: string;
   question_ar: string;
-  option_text: string;
-  option_text_ar: string;
-  option_value: number;
+  answer_type: string;
+  notes?: string;
 }
 
 interface Evaluation {
@@ -34,8 +36,15 @@ interface Evaluation {
   answers?: EvaluationAnswer[];
 }
 
+// Answer type labels
+const ANSWER_LABELS: { [key: string]: { label: string; color: string; icon: string } } = {
+  completed: { label: 'أنجزت', color: colors.success, icon: 'checkmark-circle' },
+  needs_followup: { label: 'تحتاج متابعة', color: colors.warning, icon: 'alert-circle' },
+  notes: { label: 'ملاحظات', color: colors.textSecondary, icon: 'create' },
+};
+
 export const ParentEvaluations: React.FC = () => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL } = useLanguage();
   const { selectedChild } = useAuth();
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,17 +91,94 @@ export const ParentEvaluations: React.FC = () => {
     }
   };
 
-  const getScoreColor = (value: number, maxValue: number = 5) => {
-    const ratio = value / maxValue;
-    if (ratio >= 0.8) return colors.success;
-    if (ratio >= 0.6) return colors.warning;
-    return colors.error;
+  // Calculate stats for bar chart
+  const calculateStats = (answers: EvaluationAnswer[] | undefined) => {
+    if (!answers || answers.length === 0) {
+      return { completed: 0, needs_followup: 0, notes: 0, total: 0 };
+    }
+    
+    const stats = { completed: 0, needs_followup: 0, notes: 0, total: answers.length };
+    answers.forEach(a => {
+      if (a.answer_type === 'completed') stats.completed++;
+      else if (a.answer_type === 'needs_followup') stats.needs_followup++;
+      else if (a.answer_type === 'notes') stats.notes++;
+    });
+    return stats;
+  };
+
+  // Simple bar chart component
+  const BarChart = ({ evaluation }: { evaluation: Evaluation }) => {
+    const stats = calculateStats(evaluation.answers);
+    const barWidth = (width - 80) * 0.8;
+    
+    if (stats.total === 0) return null;
+
+    return (
+      <View style={styles.barChartContainer}>
+        <View style={styles.barRow}>
+          <View style={styles.barLabelContainer}>
+            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+            <Text style={styles.barLabel}>أنجزت</Text>
+          </View>
+          <View style={styles.barBackground}>
+            <View 
+              style={[
+                styles.barFill, 
+                { 
+                  width: `${(stats.completed / stats.total) * 100}%`,
+                  backgroundColor: colors.success,
+                }
+              ]} 
+            />
+          </View>
+          <Text style={styles.barCount}>{stats.completed}</Text>
+        </View>
+
+        <View style={styles.barRow}>
+          <View style={styles.barLabelContainer}>
+            <Ionicons name="alert-circle" size={16} color={colors.warning} />
+            <Text style={styles.barLabel}>تحتاج متابعة</Text>
+          </View>
+          <View style={styles.barBackground}>
+            <View 
+              style={[
+                styles.barFill, 
+                { 
+                  width: `${(stats.needs_followup / stats.total) * 100}%`,
+                  backgroundColor: colors.warning,
+                }
+              ]} 
+            />
+          </View>
+          <Text style={styles.barCount}>{stats.needs_followup}</Text>
+        </View>
+
+        <View style={styles.barRow}>
+          <View style={styles.barLabelContainer}>
+            <Ionicons name="create" size={16} color={colors.textSecondary} />
+            <Text style={styles.barLabel}>ملاحظات</Text>
+          </View>
+          <View style={styles.barBackground}>
+            <View 
+              style={[
+                styles.barFill, 
+                { 
+                  width: `${(stats.notes / stats.total) * 100}%`,
+                  backgroundColor: colors.textSecondary,
+                }
+              ]} 
+            />
+          </View>
+          <Text style={styles.barCount}>{stats.notes}</Text>
+        </View>
+      </View>
+    );
   };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'تقييمات الأداء' : 'Performance Evaluations'} showBack />
+        <Header title="تقييمات الأداء" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -102,7 +188,7 @@ export const ParentEvaluations: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'تقييمات الأداء' : 'Performance Evaluations'} showBack />
+      <Header title="تقييمات الأداء" />
       
       <ScrollView
         style={styles.content}
@@ -116,17 +202,17 @@ export const ParentEvaluations: React.FC = () => {
             </View>
             <View style={styles.studentInfo}>
               <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                {language === 'ar' ? selectedChild.nameAr : selectedChild.name}
+                {selectedChild.nameAr || selectedChild.name}
               </Text>
               <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                {language === 'ar' ? selectedChild.gradeAr : selectedChild.grade}
+                {selectedChild.gradeAr || selectedChild.grade}
               </Text>
             </View>
           </View>
         )}
 
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          {language === 'ar' ? 'التقييمات' : 'Evaluations'} ({evaluations.length})
+          التقييمات ({evaluations.length})
         </Text>
 
         {evaluations.map((evaluation) => (
@@ -135,33 +221,37 @@ export const ParentEvaluations: React.FC = () => {
             style={styles.evaluationCard}
             onPress={() => handleViewDetails(evaluation)}
           >
-            <View style={styles.evalIcon}>
-              <Ionicons name="clipboard-outline" size={24} color={colors.primary} />
+            <View style={styles.evalHeader}>
+              <View style={styles.evalIcon}>
+                <Ionicons name="clipboard-outline" size={24} color={colors.primary} />
+              </View>
+              <View style={styles.evalInfo}>
+                <Text style={[styles.evalName, isRTL && styles.textRTL]}>
+                  {evaluation.form_name_ar || evaluation.form_name}
+                </Text>
+                <Text style={[styles.evalTeacher, isRTL && styles.textRTL]}>
+                  المعلمة: {evaluation.teacher_name_ar || evaluation.teacher_name}
+                </Text>
+                <Text style={styles.evalDate}>
+                  {new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}
+                </Text>
+              </View>
             </View>
-            <View style={styles.evalInfo}>
-              <Text style={[styles.evalName, isRTL && styles.textRTL]}>
-                {language === 'ar' ? evaluation.form_name_ar : evaluation.form_name}
-              </Text>
-              <Text style={[styles.evalTeacher, isRTL && styles.textRTL]}>
-                {language === 'ar' ? 'المعلمة: ' : 'Teacher: '}
-                {language === 'ar' ? evaluation.teacher_name_ar : evaluation.teacher_name}
-              </Text>
-              <Text style={styles.evalDate}>
-                {new Date(evaluation.evaluation_date).toLocaleDateString(
-                  language === 'ar' ? 'ar-SA' : 'en-US'
-                )}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            
+            {/* Bar Chart */}
+            <BarChart evaluation={evaluation} />
+            
+            <TouchableOpacity style={styles.detailsButton}>
+              <Text style={styles.detailsButtonText}>عرض التفاصيل</Text>
+              <Ionicons name="chevron-back" size={16} color={colors.primary} />
+            </TouchableOpacity>
           </TouchableOpacity>
         ))}
 
         {evaluations.length === 0 && (
           <View style={styles.emptyContainer}>
             <Ionicons name="clipboard-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyText}>
-              {language === 'ar' ? 'لا توجد تقييمات بعد' : 'No evaluations yet'}
-            </Text>
+            <Text style={styles.emptyText}>لا توجد تقييمات بعد</Text>
           </View>
         )}
       </ScrollView>
@@ -175,12 +265,10 @@ export const ParentEvaluations: React.FC = () => {
             </TouchableOpacity>
             <View style={styles.modalHeaderCenter}>
               <Text style={styles.modalTitle}>
-                {language === 'ar' ? selectedEvaluation?.form_name_ar : selectedEvaluation?.form_name}
+                {selectedEvaluation?.form_name_ar || selectedEvaluation?.form_name}
               </Text>
               <Text style={styles.modalDate}>
-                {selectedEvaluation && new Date(selectedEvaluation.evaluation_date).toLocaleDateString(
-                  language === 'ar' ? 'ar-SA' : 'en-US'
-                )}
+                {selectedEvaluation && new Date(selectedEvaluation.evaluation_date).toLocaleDateString('ar-SA')}
               </Text>
             </View>
             <View style={{ width: 28 }} />
@@ -193,23 +281,35 @@ export const ParentEvaluations: React.FC = () => {
               selectedEvaluation?.answers?.map((answer, index) => (
                 <View key={index} style={styles.answerCard}>
                   <Text style={[styles.questionText, isRTL && styles.textRTL]}>
-                    {language === 'ar' ? answer.question_ar : answer.question}
+                    {answer.question_ar || answer.question}
                   </Text>
                   <View style={[styles.answerRow, isRTL && styles.answerRowRTL]}>
-                    <View style={[styles.answerBadge, { backgroundColor: getScoreColor(answer.option_value) }]}>
+                    <View style={[
+                      styles.answerBadge, 
+                      { backgroundColor: ANSWER_LABELS[answer.answer_type]?.color || colors.primary }
+                    ]}>
+                      <Ionicons 
+                        name={ANSWER_LABELS[answer.answer_type]?.icon as any || 'help-circle'} 
+                        size={16} 
+                        color={colors.textLight} 
+                      />
                       <Text style={styles.answerText}>
-                        {language === 'ar' ? answer.option_text_ar : answer.option_text}
+                        {ANSWER_LABELS[answer.answer_type]?.label || answer.answer_type}
                       </Text>
                     </View>
                   </View>
+                  {answer.notes && (
+                    <View style={styles.notesBox}>
+                      <Text style={styles.notesLabel}>الملاحظات:</Text>
+                      <Text style={styles.notesText}>{answer.notes}</Text>
+                    </View>
+                  )}
                 </View>
               ))
             )}
 
             {!loadingDetails && (!selectedEvaluation?.answers || selectedEvaluation.answers.length === 0) && (
-              <Text style={styles.noAnswers}>
-                {language === 'ar' ? 'لا توجد تفاصيل متاحة' : 'No details available'}
-              </Text>
+              <Text style={styles.noAnswers}>لا توجد تفاصيل متاحة</Text>
             )}
           </ScrollView>
         </View>
@@ -272,14 +372,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   evaluationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  evalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   evalIcon: {
     width: 50,
@@ -307,6 +410,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primary,
     marginTop: 4,
+  },
+  barChartContainer: {
+    marginBottom: 12,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  barRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  barLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 100,
+    gap: 4,
+  },
+  barLabel: {
+    fontSize: 12,
+    color: colors.text,
+  },
+  barBackground: {
+    flex: 1,
+    height: 20,
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 10,
+    marginHorizontal: 8,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 10,
+  },
+  barCount: {
+    width: 24,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  detailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 4,
+  },
+  detailsButtonText: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -369,13 +526,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   answerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    gap: 6,
   },
   answerText: {
     color: colors.textLight,
     fontWeight: 'bold',
+  },
+  notesBox: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 8,
+  },
+  notesLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+    textAlign: 'right',
+  },
+  notesText: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: 'right',
   },
   noAnswers: {
     textAlign: 'center',
@@ -383,4 +560,3 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
 });
-

@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   try {
     const parents = prepare(`
-      SELECT id, mobile, name, name_ar, created_at FROM parents ORDER BY name
+      SELECT id, mobile, name, name_ar, relationship, created_at FROM parents ORDER BY name
     `).all();
 
     // Get children count for each parent
@@ -31,7 +31,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   try {
     const parent = prepare(`
-      SELECT id, mobile, name, name_ar, created_at FROM parents WHERE id = ?
+      SELECT id, mobile, name, name_ar, relationship, created_at FROM parents WHERE id = ?
     `).get(req.params.id);
     
     if (!parent) {
@@ -49,31 +49,32 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// Create parent
+// Create parent - no password required
 router.post('/', (req, res) => {
-  const { mobile, password, name, name_ar } = req.body;
+  const { mobile, name, name_ar, relationship } = req.body;
   
-  if (!mobile || !password || !name || !name_ar) {
-    return res.status(400).json({ error: 'All fields are required' });
+  if (!mobile || !name || !name_ar) {
+    return res.status(400).json({ error: 'رقم الجوال والاسم مطلوبان' });
   }
 
   try {
     // Check if mobile already exists
     const existing = prepare('SELECT id FROM parents WHERE mobile = ?').get(mobile);
     if (existing) {
-      return res.status(400).json({ error: 'Mobile number already registered' });
+      return res.status(400).json({ error: 'رقم الجوال مسجل مسبقاً' });
     }
 
     const id = uuidv4();
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    // Default password is the mobile number
+    const hashedPassword = bcrypt.hashSync(mobile, 10);
     
     prepare(`
-      INSERT INTO parents (id, mobile, password, name, name_ar) 
-      VALUES (?, ?, ?, ?, ?)
-    `).run(id, mobile, hashedPassword, name, name_ar);
+      INSERT INTO parents (id, mobile, password, name, name_ar, relationship) 
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(id, mobile, hashedPassword, name, name_ar, relationship || 'ولي أمر');
 
     const newParent = prepare(`
-      SELECT id, mobile, name, name_ar, created_at FROM parents WHERE id = ?
+      SELECT id, mobile, name, name_ar, relationship, created_at FROM parents WHERE id = ?
     `).get(id);
     
     res.status(201).json(newParent);
@@ -85,7 +86,7 @@ router.post('/', (req, res) => {
 
 // Update parent
 router.put('/:id', (req, res) => {
-  const { mobile, password, name, name_ar } = req.body;
+  const { mobile, password, name, name_ar, relationship } = req.body;
   
   try {
     const existing = prepare('SELECT * FROM parents WHERE id = ?').get(req.params.id);
@@ -108,18 +109,19 @@ router.put('/:id', (req, res) => {
 
     prepare(`
       UPDATE parents 
-      SET mobile = ?, password = ?, name = ?, name_ar = ?
+      SET mobile = ?, password = ?, name = ?, name_ar = ?, relationship = ?
       WHERE id = ?
     `).run(
       mobile || existing.mobile,
       hashedPassword,
       name || existing.name,
       name_ar || existing.name_ar,
+      relationship || existing.relationship || 'ولي أمر',
       req.params.id
     );
 
     const updated = prepare(`
-      SELECT id, mobile, name, name_ar, created_at FROM parents WHERE id = ?
+      SELECT id, mobile, name, name_ar, relationship, created_at FROM parents WHERE id = ?
     `).get(req.params.id);
     
     res.json(updated);
@@ -146,4 +148,3 @@ router.delete('/:id', (req, res) => {
 });
 
 module.exports = router;
-

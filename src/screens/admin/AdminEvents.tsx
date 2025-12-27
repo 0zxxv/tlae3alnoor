@@ -7,60 +7,51 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
-import { Header, Button, Input, EventCard } from '../../components';
+import { Header, Button, EventCard } from '../../components';
 import { mockEvents as initialEvents } from '../../data/mockData';
 import { Event } from '../../types';
 
 export const AdminEvents: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [modalVisible, setModalVisible] = useState(false);
-  const [title, setTitle] = useState('');
   const [titleAr, setTitleAr] = useState('');
-  const [description, setDescription] = useState('');
   const [descriptionAr, setDescriptionAr] = useState('');
   const [date, setDate] = useState('');
   const [eventType, setEventType] = useState<'upcoming' | 'current' | 'previous'>('upcoming');
 
-  const eventTypes: { key: 'upcoming' | 'current' | 'previous'; label: string; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { key: 'upcoming', label: 'Upcoming', labelAr: 'قادم', icon: 'time-outline' },
-    { key: 'current', label: 'Current', labelAr: 'حالي', icon: 'play-circle-outline' },
-    { key: 'previous', label: 'Previous', labelAr: 'سابق', icon: 'checkmark-circle-outline' },
+  const eventTypes: { key: 'upcoming' | 'current' | 'previous'; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { key: 'upcoming', labelAr: 'قادم', icon: 'time-outline' },
+    { key: 'current', labelAr: 'حالي', icon: 'play-circle-outline' },
+    { key: 'previous', labelAr: 'سابق', icon: 'checkmark-circle-outline' },
   ];
 
   const handleAddEvent = () => {
-    if (!title || !description || !date) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields'
-      );
+    if (!titleAr || !descriptionAr || !date) {
+      Alert.alert('خطأ', 'يرجى ملء جميع الحقول');
       return;
     }
 
     const newEvent: Event = {
       id: `event${Date.now()}`,
-      title,
-      titleAr: titleAr || title,
-      description,
-      descriptionAr: descriptionAr || description,
+      title: titleAr,
+      titleAr: titleAr,
+      description: descriptionAr,
+      descriptionAr: descriptionAr,
       date,
       type: eventType,
     };
 
     setEvents([newEvent, ...events]);
-    Alert.alert(
-      language === 'ar' ? 'نجاح' : 'Success',
-      language === 'ar' ? 'تمت إضافة الفعالية بنجاح' : 'Event added successfully'
-    );
+    Alert.alert('نجاح', 'تمت إضافة الفعالية بنجاح');
 
     // Reset form
-    setTitle('');
     setTitleAr('');
-    setDescription('');
     setDescriptionAr('');
     setDate('');
     setEventType('upcoming');
@@ -69,24 +60,16 @@ export const AdminEvents: React.FC = () => {
 
   const handleDeleteEvent = (eventId: string) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar'
-        ? 'هل أنت متأكد من حذف هذه الفعالية؟'
-        : 'Are you sure you want to delete this event?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذه الفعالية؟',
       [
-        {
-          text: t('cancel'),
-          style: 'cancel',
-        },
+        { text: t('cancel'), style: 'cancel' },
         {
           text: t('delete'),
           style: 'destructive',
           onPress: () => {
             setEvents(events.filter((e) => e.id !== eventId));
-            Alert.alert(
-              language === 'ar' ? 'نجاح' : 'Success',
-              language === 'ar' ? 'تم حذف الفعالية بنجاح' : 'Event deleted successfully'
-            );
+            Alert.alert('نجاح', 'تم حذف الفعالية بنجاح');
           },
         },
       ]
@@ -113,9 +96,7 @@ export const AdminEvents: React.FC = () => {
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {language === 'ar'
-            ? `${events.length} فعالية`
-            : `${events.length} events`}
+          {events.length} فعالية
         </Text>
 
         {/* Events List */}
@@ -149,48 +130,35 @@ export const AdminEvents: React.FC = () => {
                 </Text>
               </View>
 
-              <Input
-                label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
-                value={title}
-                onChangeText={setTitle}
-                placeholder={language === 'ar' ? 'أدخل عنوان الفعالية' : 'Enter event title'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'العنوان (عربي)' : 'Title (Arabic)'}
+              <TextInput
+                style={[styles.input, styles.inputRTL]}
+                placeholder="عنوان الفعالية"
                 value={titleAr}
                 onChangeText={setTitleAr}
-                placeholder={language === 'ar' ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                placeholderTextColor={colors.textSecondary}
               />
 
-              <Input
-                label={language === 'ar' ? 'الوصف (إنجليزي)' : 'Description (English)'}
-                value={description}
-                onChangeText={setDescription}
-                placeholder={language === 'ar' ? 'أدخل وصف الفعالية' : 'Enter event description'}
-                multiline
-                numberOfLines={3}
-              />
-
-              <Input
-                label={language === 'ar' ? 'الوصف (عربي)' : 'Description (Arabic)'}
+              <TextInput
+                style={[styles.input, styles.inputRTL, styles.textArea]}
+                placeholder="وصف الفعالية"
                 value={descriptionAr}
                 onChangeText={setDescriptionAr}
-                placeholder={language === 'ar' ? 'أدخل الوصف بالعربية' : 'Enter description in Arabic'}
                 multiline
                 numberOfLines={3}
+                placeholderTextColor={colors.textSecondary}
               />
 
-              <Input
-                label={language === 'ar' ? 'التاريخ' : 'Date'}
+              <TextInput
+                style={[styles.input, styles.inputRTL]}
+                placeholder="التاريخ (YYYY-MM-DD)"
                 value={date}
                 onChangeText={setDate}
-                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.textSecondary}
               />
 
               {/* Event Type Selection */}
               <Text style={[styles.label, isRTL && styles.textRTL]}>
-                {language === 'ar' ? 'نوع الفعالية' : 'Event Type'}
+                نوع الفعالية
               </Text>
               <View style={styles.typeContainer}>
                 {eventTypes.map((type) => (
@@ -213,7 +181,7 @@ export const AdminEvents: React.FC = () => {
                         eventType === type.key && styles.typeTextActive,
                       ]}
                     >
-                      {language === 'ar' ? type.labelAr : type.label}
+                      {type.labelAr}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -274,6 +242,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 16,
+    textAlign: 'right',
   },
   textRTL: {
     textAlign: 'right',
@@ -322,6 +291,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.card,
+  },
+  inputRTL: {
+    textAlign: 'right',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   label: {
     fontSize: 14,

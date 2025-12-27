@@ -5,20 +5,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme/colors';
-import { LanguageToggle } from './LanguageToggle';
 
 interface HeaderProps {
   title?: string;
-  showLanguageToggle?: boolean;
   showLogout?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   title,
-  showLanguageToggle = true,
   showLogout = false,
 }) => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { user, logout } = useAuth();
 
   const getGreeting = () => {
@@ -28,7 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
     return t('goodEvening');
   };
 
-  const userName = language === 'ar' ? user?.nameAr : user?.name;
+  // Always use Arabic name
+  const userName = user?.nameAr || user?.name;
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -49,7 +47,6 @@ export const Header: React.FC<HeaderProps> = ({
         </View>
 
         <View style={[styles.rightSection, isRTL && styles.rightSectionRTL]}>
-          {showLanguageToggle && <LanguageToggle />}
           {showLogout && (
             <TouchableOpacity onPress={logout} style={styles.logoutButton}>
               <Ionicons name="log-out-outline" size={20} color={colors.primary} />

@@ -16,15 +16,15 @@ export const AnnouncementCard: React.FC<AnnouncementCardProps> = ({
   onPress,
   expanded = false,
 }) => {
-  const { language, isRTL } = useLanguage();
+  const { isRTL } = useLanguage();
 
-  const title = language === 'ar' ? announcement.titleAr : announcement.title;
-  const content = language === 'ar' ? announcement.contentAr : announcement.content;
-  const authorName = language === 'ar' ? announcement.authorNameAr : announcement.authorName;
+  const title = announcement.titleAr || announcement.title;
+  const content = announcement.contentAr || announcement.content;
+  const authorName = announcement.authorNameAr || announcement.authorName;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
+    return date.toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

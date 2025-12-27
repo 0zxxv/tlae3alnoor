@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
@@ -24,19 +25,10 @@ interface Student {
   grade_ar: string;
 }
 
-interface AnswerOption {
-  id: string;
-  option_text: string;
-  option_text_ar: string;
-  option_value: number;
-}
-
 interface Question {
   id: string;
   question: string;
   question_ar: string;
-  answer_type: string;
-  options: AnswerOption[];
 }
 
 interface EvaluationForm {
@@ -48,8 +40,15 @@ interface EvaluationForm {
   questions?: Question[];
 }
 
+// Fixed answer types for all questions
+const ANSWER_OPTIONS = [
+  { id: 'completed', label: 'أنجزت', icon: 'checkmark-circle', color: colors.success },
+  { id: 'needs_followup', label: 'تحتاج متابعة', icon: 'alert-circle', color: colors.warning },
+  { id: 'notes', label: 'ملاحظات', icon: 'create', color: colors.textSecondary },
+];
+
 export const TeacherEvaluations: React.FC = () => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL } = useLanguage();
   const [forms, setForms] = useState<EvaluationForm[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,8 +62,11 @@ export const TeacherEvaluations: React.FC = () => {
   // Selected items
   const [selectedForm, setSelectedForm] = useState<EvaluationForm | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [answers, setAnswers] = useState<{ [questionId: string]: string }>({});
+  const [answers, setAnswers] = useState<{ [questionId: string]: { type: string; notes?: string } }>({});
   const [submitting, setSubmitting] = useState(false);
+  const [notesModalVisible, setNotesModalVisible] = useState(false);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
+  const [currentNotes, setCurrentNotes] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -72,7 +74,7 @@ export const TeacherEvaluations: React.FC = () => {
         evaluationsApi.getForms(),
         studentsApi.getAll(),
       ]);
-      setForms(formsData.filter(f => f.is_active !== 0));
+      setForms(formsData.filter((f: any) => f.is_active !== 0));
       setStudents(studentsData);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -102,7 +104,7 @@ export const TeacherEvaluations: React.FC = () => {
       setFormSelectVisible(false);
       setStudentSelectVisible(true);
     } catch (error) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', language === 'ar' ? 'فشل في تحميل النموذج' : 'Failed to load form');
+      Alert.alert('خطأ', 'فشل في تحميل النموذج');
     }
   };
 
@@ -113,8 +115,30 @@ export const TeacherEvaluations: React.FC = () => {
     setEvaluationVisible(true);
   };
 
-  const handleSelectAnswer = (questionId: string, optionId: string) => {
-    setAnswers(prev => ({ ...prev, [questionId]: optionId }));
+  const handleSelectAnswer = (questionId: string, type: string) => {
+    if (type === 'notes') {
+      // Show notes input modal
+      setCurrentQuestionId(questionId);
+      setCurrentNotes(answers[questionId]?.notes || '');
+      setNotesModalVisible(true);
+    } else {
+      setAnswers(prev => ({ 
+        ...prev, 
+        [questionId]: { type, notes: undefined } 
+      }));
+    }
+  };
+
+  const handleSaveNotes = () => {
+    if (currentQuestionId && currentNotes.trim()) {
+      setAnswers(prev => ({
+        ...prev,
+        [currentQuestionId]: { type: 'notes', notes: currentNotes.trim() }
+      }));
+    }
+    setNotesModalVisible(false);
+    setCurrentQuestionId(null);
+    setCurrentNotes('');
   };
 
   const handleSubmitEvaluation = async () => {
@@ -123,38 +147,33 @@ export const TeacherEvaluations: React.FC = () => {
     // Check if all questions are answered
     const unanswered = selectedForm.questions?.filter(q => !answers[q.id]);
     if (unanswered && unanswered.length > 0) {
-      Alert.alert(
-        language === 'ar' ? 'تنبيه' : 'Warning',
-        language === 'ar' ? 'يرجى الإجابة على جميع الأسئلة' : 'Please answer all questions'
-      );
+      Alert.alert('تنبيه', 'يرجى الإجابة على جميع الأسئلة');
       return;
     }
 
     setSubmitting(true);
     try {
-      const answersArray = Object.entries(answers).map(([questionId, optionId]) => ({
+      const answersArray = Object.entries(answers).map(([questionId, answer]) => ({
         question_id: questionId,
-        selected_option_id: optionId,
+        answer_type: answer.type,
+        notes: answer.notes || null,
       }));
 
       await evaluationsApi.create({
         student_id: selectedStudent.id,
         form_id: selectedForm.id,
-        teacher_id: 'demo-teacher', // In real app, get from auth context
+        teacher_id: 'demo-teacher',
         evaluation_date: new Date().toISOString().split('T')[0],
         answers: answersArray,
       });
 
-      Alert.alert(
-        language === 'ar' ? 'نجاح' : 'Success',
-        language === 'ar' ? 'تم حفظ التقييم بنجاح' : 'Evaluation saved successfully'
-      );
+      Alert.alert('نجاح', 'تم حفظ التقييم بنجاح');
       setEvaluationVisible(false);
       setSelectedForm(null);
       setSelectedStudent(null);
       setAnswers({});
     } catch (error: any) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+      Alert.alert('خطأ', error.message);
     } finally {
       setSubmitting(false);
     }
@@ -163,7 +182,7 @@ export const TeacherEvaluations: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'تقييم الطالبات' : 'Student Evaluations'} showBack />
+        <Header title="تقييم الطالبات" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -173,7 +192,7 @@ export const TeacherEvaluations: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'تقييم الطالبات' : 'Student Evaluations'} showBack />
+      <Header title="تقييم الطالبات" />
       
       <ScrollView
         style={styles.content}
@@ -181,16 +200,12 @@ export const TeacherEvaluations: React.FC = () => {
       >
         <TouchableOpacity style={styles.startButton} onPress={handleStartEvaluation}>
           <Ionicons name="clipboard" size={32} color={colors.textLight} />
-          <Text style={styles.startButtonText}>
-            {language === 'ar' ? 'بدء تقييم جديد' : 'Start New Evaluation'}
-          </Text>
-          <Text style={styles.startButtonSubtext}>
-            {language === 'ar' ? 'اختر النموذج والطالبة' : 'Select form and student'}
-          </Text>
+          <Text style={styles.startButtonText}>بدء تقييم جديد</Text>
+          <Text style={styles.startButtonSubtext}>اختر النموذج والطالبة</Text>
         </TouchableOpacity>
 
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          {language === 'ar' ? 'نماذج التقييم المتاحة' : 'Available Forms'}
+          نماذج التقييم المتاحة
         </Text>
 
         {forms.map((form) => (
@@ -200,11 +215,11 @@ export const TeacherEvaluations: React.FC = () => {
             </View>
             <View style={styles.formInfo}>
               <Text style={[styles.formName, isRTL && styles.textRTL]}>
-                {language === 'ar' ? form.name_ar : form.name}
+                {form.name_ar || form.name}
               </Text>
-              {form.description && (
+              {form.description_ar && (
                 <Text style={[styles.formDesc, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? form.description_ar : form.description}
+                  {form.description_ar}
                 </Text>
               )}
             </View>
@@ -212,9 +227,7 @@ export const TeacherEvaluations: React.FC = () => {
         ))}
 
         {forms.length === 0 && (
-          <Text style={styles.emptyText}>
-            {language === 'ar' ? 'لا توجد نماذج تقييم متاحة' : 'No evaluation forms available'}
-          </Text>
+          <Text style={styles.emptyText}>لا توجد نماذج تقييم متاحة</Text>
         )}
       </ScrollView>
 
@@ -222,10 +235,8 @@ export const TeacherEvaluations: React.FC = () => {
       <Modal visible={formSelectVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {language === 'ar' ? 'اختر نموذج التقييم' : 'Select Evaluation Form'}
-              </Text>
+            <View style={styles.modalHeaderSmall}>
+              <Text style={styles.modalTitle}>اختر نموذج التقييم</Text>
               <TouchableOpacity onPress={() => setFormSelectVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
@@ -238,9 +249,7 @@ export const TeacherEvaluations: React.FC = () => {
                   onPress={() => handleSelectForm(form)}
                 >
                   <Ionicons name="document-text" size={24} color={colors.primary} />
-                  <Text style={styles.selectItemText}>
-                    {language === 'ar' ? form.name_ar : form.name}
-                  </Text>
+                  <Text style={styles.selectItemText}>{form.name_ar || form.name}</Text>
                   <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               ))}
@@ -253,10 +262,8 @@ export const TeacherEvaluations: React.FC = () => {
       <Modal visible={studentSelectVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {language === 'ar' ? 'اختر الطالبة' : 'Select Student'}
-              </Text>
+            <View style={styles.modalHeaderSmall}>
+              <Text style={styles.modalTitle}>اختر الطالبة</Text>
               <TouchableOpacity onPress={() => setStudentSelectVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
@@ -272,12 +279,8 @@ export const TeacherEvaluations: React.FC = () => {
                     <Ionicons name="person" size={20} color={colors.textLight} />
                   </View>
                   <View style={styles.studentInfo}>
-                    <Text style={styles.selectItemText}>
-                      {language === 'ar' ? student.name_ar : student.name}
-                    </Text>
-                    <Text style={styles.studentGrade}>
-                      {language === 'ar' ? student.grade_ar : student.grade}
-                    </Text>
+                    <Text style={styles.selectItemText}>{student.name_ar || student.name}</Text>
+                    <Text style={styles.studentGrade}>{student.grade_ar || student.grade}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
@@ -295,12 +298,8 @@ export const TeacherEvaluations: React.FC = () => {
               <Ionicons name="close" size={28} color={colors.text} />
             </TouchableOpacity>
             <View style={styles.evalHeader}>
-              <Text style={styles.modalTitle}>
-                {language === 'ar' ? selectedForm?.name_ar : selectedForm?.name}
-              </Text>
-              <Text style={styles.evalStudent}>
-                {language === 'ar' ? selectedStudent?.name_ar : selectedStudent?.name}
-              </Text>
+              <Text style={styles.modalTitle}>{selectedForm?.name_ar || selectedForm?.name}</Text>
+              <Text style={styles.evalStudent}>{selectedStudent?.name_ar || selectedStudent?.name}</Text>
             </View>
             <TouchableOpacity 
               onPress={handleSubmitEvaluation}
@@ -309,7 +308,7 @@ export const TeacherEvaluations: React.FC = () => {
               {submitting ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Text style={styles.saveText}>{language === 'ar' ? 'حفظ' : 'Save'}</Text>
+                <Text style={styles.saveText}>حفظ</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -317,34 +316,83 @@ export const TeacherEvaluations: React.FC = () => {
           <ScrollView style={styles.evalContent}>
             {selectedForm?.questions?.map((question, index) => (
               <View key={question.id} style={styles.questionCard}>
-                <Text style={styles.questionNumber}>
-                  {language === 'ar' ? `السؤال ${index + 1}` : `Question ${index + 1}`}
-                </Text>
+                <Text style={styles.questionNumber}>السؤال {index + 1}</Text>
                 <Text style={[styles.questionText, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? question.question_ar : question.question}
+                  {question.question_ar || question.question}
                 </Text>
                 <View style={styles.optionsContainer}>
-                  {question.options.map((option) => (
+                  {ANSWER_OPTIONS.map((option) => (
                     <TouchableOpacity
                       key={option.id}
                       style={[
                         styles.optionButton,
-                        answers[question.id] === option.id && styles.optionSelected,
+                        { borderColor: option.color },
+                        answers[question.id]?.type === option.id && { 
+                          backgroundColor: option.color,
+                          borderColor: option.color,
+                        },
                       ]}
                       onPress={() => handleSelectAnswer(question.id, option.id)}
                     >
+                      <Ionicons 
+                        name={option.icon as any} 
+                        size={20} 
+                        color={answers[question.id]?.type === option.id ? colors.textLight : option.color} 
+                      />
                       <Text style={[
                         styles.optionText,
-                        answers[question.id] === option.id && styles.optionTextSelected,
+                        { color: answers[question.id]?.type === option.id ? colors.textLight : option.color },
                       ]}>
-                        {language === 'ar' ? option.option_text_ar : option.option_text}
+                        {option.label}
                       </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
+                {answers[question.id]?.type === 'notes' && answers[question.id]?.notes && (
+                  <View style={styles.notesPreview}>
+                    <Text style={styles.notesPreviewText}>{answers[question.id].notes}</Text>
+                  </View>
+                )}
               </View>
             ))}
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Notes Input Modal */}
+      <Modal visible={notesModalVisible} animationType="fade" transparent>
+        <View style={styles.notesModalOverlay}>
+          <View style={styles.notesModalContent}>
+            <Text style={styles.notesModalTitle}>أضف ملاحظاتك</Text>
+            <TextInput
+              style={styles.notesInput}
+              placeholder="اكتب ملاحظاتك هنا..."
+              value={currentNotes}
+              onChangeText={setCurrentNotes}
+              multiline
+              numberOfLines={4}
+              placeholderTextColor={colors.textSecondary}
+              textAlign="right"
+            />
+            <View style={styles.notesModalButtons}>
+              <TouchableOpacity
+                style={[styles.notesButton, styles.cancelButton]}
+                onPress={() => {
+                  setNotesModalVisible(false);
+                  setCurrentQuestionId(null);
+                  setCurrentNotes('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>إلغاء</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.notesButton, styles.submitButton]}
+                onPress={handleSaveNotes}
+              >
+                <Text style={styles.submitButtonText}>حفظ</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </Modal>
     </View>
@@ -442,12 +490,20 @@ const styles = StyleSheet.create({
     padding: 24,
     maxHeight: '70%',
   },
-  modalHeader: {
+  modalHeaderSmall: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    paddingTop: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingTop: 50,
   },
   modalTitle: {
     fontSize: 18,
@@ -469,6 +525,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: colors.text,
+    textAlign: 'right',
   },
   studentAvatar: {
     width: 40,
@@ -484,6 +541,7 @@ const styles = StyleSheet.create({
   studentGrade: {
     fontSize: 12,
     color: colors.textSecondary,
+    textAlign: 'right',
   },
   fullModal: {
     flex: 1,
@@ -520,6 +578,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: 'right',
   },
   questionText: {
     fontSize: 16,
@@ -528,27 +587,90 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   optionsContainer: {
+    flexDirection: 'row',
     gap: 8,
+    justifyContent: 'center',
   },
   optionButton: {
-    padding: 14,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  optionSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.secondary,
+    gap: 6,
   },
   optionText: {
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  optionTextSelected: {
-    color: colors.primary,
+    fontSize: 12,
     fontWeight: 'bold',
   },
+  notesPreview: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: colors.backgroundSecondary,
+    borderRadius: 8,
+  },
+  notesPreviewText: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: 'right',
+  },
+  notesModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  notesModalContent: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  notesModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 16,
+    textAlign: 'right',
+  },
+  notesInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    minHeight: 100,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.background,
+    textAlignVertical: 'top',
+  },
+  notesModalButtons: {
+    flexDirection: 'row',
+    marginTop: 16,
+    gap: 12,
+  },
+  notesButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.backgroundSecondary,
+  },
+  cancelButtonText: {
+    color: colors.text,
+    fontWeight: '600',
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+  },
+  submitButtonText: {
+    color: colors.textLight,
+    fontWeight: '600',
+  },
 });
-

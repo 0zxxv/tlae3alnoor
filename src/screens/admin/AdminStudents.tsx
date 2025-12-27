@@ -26,7 +26,7 @@ interface Student {
 }
 
 export const AdminStudents: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -54,15 +54,10 @@ export const AdminStudents: React.FC = () => {
 
   const handleDeleteStudent = (student: Student) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar'
-        ? 'هل أنت متأكد من حذف هذه الطالبة؟'
-        : 'Are you sure you want to delete this student?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذه الطالبة؟',
       [
-        {
-          text: t('cancel'),
-          style: 'cancel',
-        },
+        { text: t('cancel'), style: 'cancel' },
         {
           text: t('delete'),
           style: 'destructive',
@@ -70,12 +65,9 @@ export const AdminStudents: React.FC = () => {
             try {
               await studentsApi.delete(student.id);
               fetchStudents();
-              Alert.alert(
-                language === 'ar' ? 'نجاح' : 'Success',
-                language === 'ar' ? 'تم حذف الطالبة بنجاح' : 'Student deleted successfully'
-              );
+              Alert.alert('نجاح', 'تم حذف الطالبة بنجاح');
             } catch (error: any) {
-              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+              Alert.alert('خطأ', error.message);
             }
           },
         },
@@ -86,7 +78,7 @@ export const AdminStudents: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'الطالبات' : 'Students'} showBack />
+        <Header title="الطالبات" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -96,7 +88,7 @@ export const AdminStudents: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'الطالبات' : 'Students'} showBack />
+      <Header title="الطالبات" />
       
       <ScrollView 
         style={styles.content} 
@@ -113,15 +105,11 @@ export const AdminStudents: React.FC = () => {
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {language === 'ar'
-            ? `${students.length} طالبة مسجلة`
-            : `${students.length} students registered`}
+          {students.length} طالبة مسجلة
         </Text>
 
         <Text style={[styles.infoText, isRTL && styles.textRTL]}>
-          {language === 'ar'
-            ? 'لإضافة طالبة جديدة، اذهب إلى إدارة أولياء الأمور'
-            : 'To add a new student, go to Parents management'}
+          لإضافة طالبة جديدة، اذهب إلى إدارة أولياء الأمور
         </Text>
 
         {/* Students List */}
@@ -133,19 +121,19 @@ export const AdminStudents: React.FC = () => {
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.name_ar : student.name}
+                  {student.name_ar || student.name}
                 </Text>
                 <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
                   <Ionicons name="school-outline" size={12} color={colors.textSecondary} />
                   <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                    {language === 'ar' ? student.grade_ar : student.grade}
+                    {student.grade_ar || student.grade}
                   </Text>
                 </View>
                 {student.parent_name && (
                   <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
                     <Ionicons name="people-outline" size={12} color={colors.primary} />
                     <Text style={[styles.parentName, isRTL && styles.textRTL]}>
-                      {language === 'ar' ? student.parent_name_ar : student.parent_name}
+                      {student.parent_name_ar || student.parent_name}
                     </Text>
                   </View>
                 )}
@@ -161,9 +149,7 @@ export const AdminStudents: React.FC = () => {
         ))}
 
         {students.length === 0 && (
-          <Text style={styles.emptyText}>
-            {language === 'ar' ? 'لا توجد طالبات مسجلات' : 'No students registered'}
-          </Text>
+          <Text style={styles.emptyText}>لا توجد طالبات مسجلات</Text>
         )}
       </ScrollView>
     </View>
@@ -209,12 +195,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 8,
+    textAlign: 'right',
   },
   infoText: {
     fontSize: 13,
     color: colors.primary,
     marginBottom: 16,
     fontStyle: 'italic',
+    textAlign: 'right',
   },
   textRTL: {
     textAlign: 'right',

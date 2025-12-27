@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
-import { Header, Card } from '../../components';
+import { Header } from '../../components';
 import { parentsApi, studentsApi } from '../../services/api';
 
 interface Parent {
@@ -22,6 +22,7 @@ interface Parent {
   mobile: string;
   name: string;
   name_ar: string;
+  relationship?: string;
   children_count: number;
 }
 
@@ -35,7 +36,7 @@ interface Student {
 }
 
 export const AdminParents: React.FC = () => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL } = useLanguage();
   const [parents, setParents] = useState<Parent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,17 +45,14 @@ export const AdminParents: React.FC = () => {
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [parentChildren, setParentChildren] = useState<Student[]>([]);
 
-  // Form states
+  // Form states - no password required
   const [mobile, setMobile] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [nameAr, setNameAr] = useState('');
+  const [relationship, setRelationship] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   // Student form
-  const [studentName, setStudentName] = useState('');
   const [studentNameAr, setStudentNameAr] = useState('');
-  const [studentGrade, setStudentGrade] = useState('');
   const [studentGradeAr, setStudentGradeAr] = useState('');
 
   const fetchParents = useCallback(async () => {
@@ -63,12 +61,12 @@ export const AdminParents: React.FC = () => {
       setParents(data);
     } catch (error) {
       console.error('Error fetching parents:', error);
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', language === 'ar' ? 'فشل في تحميل البيانات' : 'Failed to load data');
+      Alert.alert('خطأ', 'فشل في تحميل البيانات');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [language]);
+  }, []);
 
   useEffect(() => {
     fetchParents();
@@ -81,63 +79,67 @@ export const AdminParents: React.FC = () => {
 
   const resetForm = () => {
     setMobile('');
-    setPassword('');
-    setName('');
     setNameAr('');
+    setRelationship('');
     setIsEditing(false);
     setSelectedParent(null);
   };
 
   const handleSubmit = async () => {
-    if (!mobile || !name || !nameAr || (!isEditing && !password)) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'جميع الحقول مطلوبة' : 'All fields are required'
-      );
+    if (!mobile || !nameAr) {
+      Alert.alert('خطأ', 'رقم الجوال والاسم مطلوبان');
       return;
     }
 
     try {
       if (isEditing && selectedParent) {
-        await parentsApi.update(selectedParent.id, { mobile, name, name_ar: nameAr, ...(password ? { password } : {}) });
+        await parentsApi.update(selectedParent.id, { 
+          mobile, 
+          name: nameAr, 
+          name_ar: nameAr,
+          relationship: relationship || 'ولي أمر',
+        });
       } else {
-        await parentsApi.create({ mobile, password, name, name_ar: nameAr });
+        await parentsApi.create({ 
+          mobile, 
+          name: nameAr, 
+          name_ar: nameAr,
+          relationship: relationship || 'ولي أمر',
+        });
       }
       setModalVisible(false);
       resetForm();
       fetchParents();
+      Alert.alert('نجاح', isEditing ? 'تم التحديث بنجاح' : 'تمت الإضافة بنجاح');
     } catch (error: any) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+      Alert.alert('خطأ', error.message);
     }
   };
 
   const handleEdit = (parent: Parent) => {
     setSelectedParent(parent);
     setMobile(parent.mobile);
-    setName(parent.name);
-    setNameAr(parent.name_ar);
-    setPassword('');
+    setNameAr(parent.name_ar || parent.name);
+    setRelationship(parent.relationship || '');
     setIsEditing(true);
     setModalVisible(true);
   };
 
   const handleDelete = (parent: Parent) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar' 
-        ? 'سيتم حذف ولي الأمر وجميع الطلاب المرتبطين به. هل أنت متأكد؟' 
-        : 'This will delete the parent and all linked students. Are you sure?',
+      'تأكيد الحذف',
+      'سيتم حذف الحساب وجميع الطالبات المرتبطات به. هل أنت متأكد؟',
       [
-        { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: 'إلغاء', style: 'cancel' },
         {
-          text: language === 'ar' ? 'حذف' : 'Delete',
+          text: 'حذف',
           style: 'destructive',
           onPress: async () => {
             try {
               await parentsApi.delete(parent.id);
               fetchParents();
             } catch (error: any) {
-              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+              Alert.alert('خطأ', error.message);
             }
           },
         },
@@ -152,47 +154,42 @@ export const AdminParents: React.FC = () => {
       setParentChildren(children);
       setStudentModalVisible(true);
     } catch (error) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', language === 'ar' ? 'فشل في تحميل الطلاب' : 'Failed to load students');
+      Alert.alert('خطأ', 'فشل في تحميل الطالبات');
     }
   };
 
   const handleAddStudent = async () => {
-    if (!studentName || !studentNameAr || !studentGrade || !studentGradeAr || !selectedParent) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'جميع الحقول مطلوبة' : 'All fields are required'
-      );
+    if (!studentNameAr || !studentGradeAr || !selectedParent) {
+      Alert.alert('خطأ', 'جميع الحقول مطلوبة');
       return;
     }
 
     try {
       await studentsApi.create({
         parent_id: selectedParent.id,
-        name: studentName,
+        name: studentNameAr,
         name_ar: studentNameAr,
-        grade: studentGrade,
+        grade: studentGradeAr,
         grade_ar: studentGradeAr,
       });
-      setStudentName('');
       setStudentNameAr('');
-      setStudentGrade('');
       setStudentGradeAr('');
       const children = await studentsApi.getByParent(selectedParent.id);
       setParentChildren(children);
       fetchParents();
     } catch (error: any) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+      Alert.alert('خطأ', error.message);
     }
   };
 
   const handleDeleteStudent = (student: Student) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar' ? 'هل أنت متأكد من حذف هذه الطالبة؟' : 'Are you sure you want to delete this student?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذه الطالبة؟',
       [
-        { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: 'إلغاء', style: 'cancel' },
         {
-          text: language === 'ar' ? 'حذف' : 'Delete',
+          text: 'حذف',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -201,7 +198,7 @@ export const AdminParents: React.FC = () => {
               setParentChildren(children);
               fetchParents();
             } catch (error: any) {
-              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+              Alert.alert('خطأ', error.message);
             }
           },
         },
@@ -212,7 +209,7 @@ export const AdminParents: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'أولياء الأمور' : 'Parents'} showBack />
+        <Header title="أولياء الأمور" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -222,7 +219,7 @@ export const AdminParents: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'أولياء الأمور' : 'Parents'} showBack />
+      <Header title="أولياء الأمور" />
       
       <ScrollView
         style={styles.content}
@@ -236,9 +233,7 @@ export const AdminParents: React.FC = () => {
           }}
         >
           <Ionicons name="add-circle" size={24} color={colors.textLight} />
-          <Text style={styles.addButtonText}>
-            {language === 'ar' ? 'إضافة ولي أمر' : 'Add Parent'}
-          </Text>
+          <Text style={styles.addButtonText}>إضافة حساب جديد</Text>
         </TouchableOpacity>
 
         {parents.map((parent) => (
@@ -249,16 +244,19 @@ export const AdminParents: React.FC = () => {
               </View>
               <View style={styles.parentDetails}>
                 <Text style={[styles.parentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? parent.name_ar : parent.name}
+                  {parent.name_ar || parent.name}
                 </Text>
                 <Text style={[styles.parentMobile, isRTL && styles.textRTL]}>
                   {parent.mobile}
                 </Text>
+                {parent.relationship && (
+                  <Text style={[styles.relationship, isRTL && styles.textRTL]}>
+                    صلة القرابة: {parent.relationship}
+                  </Text>
+                )}
                 <TouchableOpacity onPress={() => handleViewChildren(parent)}>
                   <Text style={styles.childrenCount}>
-                    {language === 'ar' 
-                      ? `${parent.children_count} طالبة` 
-                      : `${parent.children_count} student(s)`}
+                    {parent.children_count} طالبة
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -287,9 +285,7 @@ export const AdminParents: React.FC = () => {
         ))}
 
         {parents.length === 0 && (
-          <Text style={styles.emptyText}>
-            {language === 'ar' ? 'لا يوجد أولياء أمور' : 'No parents found'}
-          </Text>
+          <Text style={styles.emptyText}>لا يوجد حسابات</Text>
         )}
       </ScrollView>
 
@@ -298,41 +294,35 @@ export const AdminParents: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEditing 
-                ? (language === 'ar' ? 'تعديل ولي أمر' : 'Edit Parent')
-                : (language === 'ar' ? 'إضافة ولي أمر' : 'Add Parent')}
+              {isEditing ? 'تعديل الحساب' : 'إضافة حساب جديد'}
             </Text>
 
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'رقم الجوال' : 'Mobile Number'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="رقم الجوال *"
               value={mobile}
               onChangeText={setMobile}
               keyboardType="phone-pad"
               placeholderTextColor={colors.textSecondary}
             />
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'كلمة المرور' : 'Password'}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الاسم (إنجليزي)' : 'Name (English)'}
-              value={name}
-              onChangeText={setName}
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الاسم (عربي)' : 'Name (Arabic)'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="الاسم *"
               value={nameAr}
               onChangeText={setNameAr}
               placeholderTextColor={colors.textSecondary}
             />
+            <TextInput
+              style={[styles.input, styles.inputRTL]}
+              placeholder="صلة القرابة (مثال: أم، خالة، عمة)"
+              value={relationship}
+              onChangeText={setRelationship}
+              placeholderTextColor={colors.textSecondary}
+            />
+
+            <Text style={styles.hint}>
+              * صلة القرابة اختيارية - إذا لم تحدد ستكون "ولي أمر"
+            </Text>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -342,17 +332,13 @@ export const AdminParents: React.FC = () => {
                   resetForm();
                 }}
               >
-                <Text style={styles.cancelButtonText}>
-                  {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                </Text>
+                <Text style={styles.cancelButtonText}>إلغاء</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.submitButton]}
                 onPress={handleSubmit}
               >
-                <Text style={styles.submitButtonText}>
-                  {language === 'ar' ? 'حفظ' : 'Save'}
-                </Text>
+                <Text style={styles.submitButtonText}>حفظ</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -365,9 +351,7 @@ export const AdminParents: React.FC = () => {
           <View style={[styles.modalContent, styles.largeModal]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {language === 'ar' 
-                  ? `طالبات ${selectedParent?.name_ar}` 
-                  : `${selectedParent?.name}'s Students`}
+                طالبات {selectedParent?.name_ar || selectedParent?.name}
               </Text>
               <TouchableOpacity onPress={() => setStudentModalVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.text} />
@@ -381,10 +365,10 @@ export const AdminParents: React.FC = () => {
                     <Ionicons name="person-circle" size={32} color={colors.primary} />
                     <View style={styles.studentDetails}>
                       <Text style={styles.studentName}>
-                        {language === 'ar' ? student.name_ar : student.name}
+                        {student.name_ar || student.name}
                       </Text>
                       <Text style={styles.studentGrade}>
-                        {language === 'ar' ? student.grade_ar : student.grade}
+                        {student.grade_ar || student.grade}
                       </Text>
                     </View>
                   </View>
@@ -393,44 +377,30 @@ export const AdminParents: React.FC = () => {
                   </TouchableOpacity>
                 </View>
               ))}
+
+              {parentChildren.length === 0 && (
+                <Text style={styles.noStudentsText}>لا توجد طالبات مسجلات</Text>
+              )}
             </ScrollView>
 
             <View style={styles.addStudentSection}>
-              <Text style={styles.sectionTitle}>
-                {language === 'ar' ? 'إضافة طالبة جديدة' : 'Add New Student'}
-              </Text>
+              <Text style={styles.sectionTitle}>إضافة طالبة جديدة</Text>
               <TextInput
-                style={[styles.input, isRTL && styles.inputRTL]}
-                placeholder={language === 'ar' ? 'الاسم (إنجليزي)' : 'Name (English)'}
-                value={studentName}
-                onChangeText={setStudentName}
-                placeholderTextColor={colors.textSecondary}
-              />
-              <TextInput
-                style={[styles.input, isRTL && styles.inputRTL]}
-                placeholder={language === 'ar' ? 'الاسم (عربي)' : 'Name (Arabic)'}
+                style={[styles.input, styles.inputRTL]}
+                placeholder="اسم الطالبة"
                 value={studentNameAr}
                 onChangeText={setStudentNameAr}
                 placeholderTextColor={colors.textSecondary}
               />
               <TextInput
-                style={[styles.input, isRTL && styles.inputRTL]}
-                placeholder={language === 'ar' ? 'الصف (إنجليزي)' : 'Grade (English)'}
-                value={studentGrade}
-                onChangeText={setStudentGrade}
-                placeholderTextColor={colors.textSecondary}
-              />
-              <TextInput
-                style={[styles.input, isRTL && styles.inputRTL]}
-                placeholder={language === 'ar' ? 'الصف (عربي)' : 'Grade (Arabic)'}
+                style={[styles.input, styles.inputRTL]}
+                placeholder="الصف"
                 value={studentGradeAr}
                 onChangeText={setStudentGradeAr}
                 placeholderTextColor={colors.textSecondary}
               />
               <TouchableOpacity style={styles.addStudentButton} onPress={handleAddStudent}>
-                <Text style={styles.addStudentButtonText}>
-                  {language === 'ar' ? 'إضافة الطالبة' : 'Add Student'}
-                </Text>
+                <Text style={styles.addStudentButtonText}>إضافة الطالبة</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -507,9 +477,15 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
-  childrenCount: {
+  relationship: {
     fontSize: 12,
     color: colors.primary,
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  childrenCount: {
+    fontSize: 12,
+    color: colors.success,
     marginTop: 4,
     fontWeight: '600',
   },
@@ -560,6 +536,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 20,
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,
@@ -573,6 +550,12 @@ const styles = StyleSheet.create({
   },
   inputRTL: {
     textAlign: 'right',
+  },
+  hint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginBottom: 8,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -624,10 +607,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.text,
+    textAlign: 'right',
   },
   studentGrade: {
     fontSize: 12,
     color: colors.textSecondary,
+    textAlign: 'right',
+  },
+  noStudentsText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    paddingVertical: 20,
   },
   addStudentSection: {
     borderTopWidth: 1,
@@ -639,6 +629,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 12,
+    textAlign: 'right',
   },
   addStudentButton: {
     backgroundColor: colors.primary,
@@ -652,4 +643,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-

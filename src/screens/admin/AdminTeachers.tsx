@@ -25,17 +25,16 @@ interface Teacher {
 }
 
 export const AdminTeachers: React.FC = () => {
-  const { isRTL, language } = useLanguage();
+  const { isRTL } = useLanguage();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
-  // Form states
+  // Form states - simplified to Arabic only
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [nameAr, setNameAr] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -45,12 +44,12 @@ export const AdminTeachers: React.FC = () => {
       setTeachers(data);
     } catch (error) {
       console.error('Error fetching teachers:', error);
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', language === 'ar' ? 'فشل في تحميل البيانات' : 'Failed to load data');
+      Alert.alert('خطأ', 'فشل في تحميل البيانات');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [language]);
+  }, []);
 
   useEffect(() => {
     fetchTeachers();
@@ -64,40 +63,40 @@ export const AdminTeachers: React.FC = () => {
   const resetForm = () => {
     setMobile('');
     setPassword('');
-    setName('');
     setNameAr('');
     setIsEditing(false);
     setSelectedTeacher(null);
   };
 
   const handleSubmit = async () => {
-    if (!mobile || !name || !nameAr || (!isEditing && !password)) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'جميع الحقول مطلوبة' : 'All fields are required'
-      );
+    if (!mobile || !nameAr || (!isEditing && !password)) {
+      Alert.alert('خطأ', 'جميع الحقول مطلوبة');
       return;
     }
 
     try {
       if (isEditing && selectedTeacher) {
-        await teachersApi.update(selectedTeacher.id, { mobile, name, name_ar: nameAr, ...(password ? { password } : {}) });
+        await teachersApi.update(selectedTeacher.id, { 
+          mobile, 
+          name: nameAr, 
+          name_ar: nameAr, 
+          ...(password ? { password } : {}) 
+        });
       } else {
-        await teachersApi.create({ mobile, password, name, name_ar: nameAr });
+        await teachersApi.create({ mobile, password, name: nameAr, name_ar: nameAr });
       }
       setModalVisible(false);
       resetForm();
       fetchTeachers();
     } catch (error: any) {
-      Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+      Alert.alert('خطأ', error.message);
     }
   };
 
   const handleEdit = (teacher: Teacher) => {
     setSelectedTeacher(teacher);
     setMobile(teacher.mobile);
-    setName(teacher.name);
-    setNameAr(teacher.name_ar);
+    setNameAr(teacher.name_ar || teacher.name);
     setPassword('');
     setIsEditing(true);
     setModalVisible(true);
@@ -105,19 +104,19 @@ export const AdminTeachers: React.FC = () => {
 
   const handleDelete = (teacher: Teacher) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar' ? 'هل أنت متأكد من حذف هذه المعلمة؟' : 'Are you sure you want to delete this teacher?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذه المعلمة؟',
       [
-        { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' },
+        { text: 'إلغاء', style: 'cancel' },
         {
-          text: language === 'ar' ? 'حذف' : 'Delete',
+          text: 'حذف',
           style: 'destructive',
           onPress: async () => {
             try {
               await teachersApi.delete(teacher.id);
               fetchTeachers();
             } catch (error: any) {
-              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+              Alert.alert('خطأ', error.message);
             }
           },
         },
@@ -128,7 +127,7 @@ export const AdminTeachers: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title={language === 'ar' ? 'المعلمات' : 'Teachers'} showBack />
+        <Header title="المعلمات" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -138,7 +137,7 @@ export const AdminTeachers: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title={language === 'ar' ? 'المعلمات' : 'Teachers'} showBack />
+      <Header title="المعلمات" />
       
       <ScrollView
         style={styles.content}
@@ -152,9 +151,7 @@ export const AdminTeachers: React.FC = () => {
           }}
         >
           <Ionicons name="add-circle" size={24} color={colors.textLight} />
-          <Text style={styles.addButtonText}>
-            {language === 'ar' ? 'إضافة معلمة' : 'Add Teacher'}
-          </Text>
+          <Text style={styles.addButtonText}>إضافة معلمة</Text>
         </TouchableOpacity>
 
         {teachers.map((teacher) => (
@@ -165,7 +162,7 @@ export const AdminTeachers: React.FC = () => {
               </View>
               <View style={styles.teacherDetails}>
                 <Text style={[styles.teacherName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? teacher.name_ar : teacher.name}
+                  {teacher.name_ar || teacher.name}
                 </Text>
                 <Text style={[styles.teacherMobile, isRTL && styles.textRTL]}>
                   {teacher.mobile}
@@ -190,9 +187,7 @@ export const AdminTeachers: React.FC = () => {
         ))}
 
         {teachers.length === 0 && (
-          <Text style={styles.emptyText}>
-            {language === 'ar' ? 'لا يوجد معلمات' : 'No teachers found'}
-          </Text>
+          <Text style={styles.emptyText}>لا يوجد معلمات</Text>
         )}
       </ScrollView>
 
@@ -201,37 +196,28 @@ export const AdminTeachers: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEditing 
-                ? (language === 'ar' ? 'تعديل معلمة' : 'Edit Teacher')
-                : (language === 'ar' ? 'إضافة معلمة' : 'Add Teacher')}
+              {isEditing ? 'تعديل معلمة' : 'إضافة معلمة'}
             </Text>
 
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'رقم الجوال' : 'Mobile Number'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="رقم الجوال"
               value={mobile}
               onChangeText={setMobile}
               keyboardType="phone-pad"
               placeholderTextColor={colors.textSecondary}
             />
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'كلمة المرور' : 'Password'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="كلمة المرور"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
               placeholderTextColor={colors.textSecondary}
             />
             <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الاسم (إنجليزي)' : 'Name (English)'}
-              value={name}
-              onChangeText={setName}
-              placeholderTextColor={colors.textSecondary}
-            />
-            <TextInput
-              style={[styles.input, isRTL && styles.inputRTL]}
-              placeholder={language === 'ar' ? 'الاسم (عربي)' : 'Name (Arabic)'}
+              style={[styles.input, styles.inputRTL]}
+              placeholder="الاسم"
               value={nameAr}
               onChangeText={setNameAr}
               placeholderTextColor={colors.textSecondary}
@@ -245,17 +231,13 @@ export const AdminTeachers: React.FC = () => {
                   resetForm();
                 }}
               >
-                <Text style={styles.cancelButtonText}>
-                  {language === 'ar' ? 'إلغاء' : 'Cancel'}
-                </Text>
+                <Text style={styles.cancelButtonText}>إلغاء</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.submitButton]}
                 onPress={handleSubmit}
               >
-                <Text style={styles.submitButtonText}>
-                  {language === 'ar' ? 'حفظ' : 'Save'}
-                </Text>
+                <Text style={styles.submitButtonText}>حفظ</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -370,6 +352,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 20,
+    textAlign: 'right',
   },
   input: {
     borderWidth: 1,
@@ -411,4 +394,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

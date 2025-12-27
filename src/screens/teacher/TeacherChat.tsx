@@ -18,7 +18,7 @@ import { mockUsers, mockChatMessages } from '../../data/mockData';
 import { User, ChatMessage } from '../../types';
 
 export const TeacherChat: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { user } = useAuth();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(mockChatMessages);
@@ -60,7 +60,7 @@ export const TeacherChat: React.FC = () => {
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString(language === 'ar' ? 'ar-SA' : 'en-US', {
+    return date.toLocaleTimeString('ar-SA', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -69,11 +69,11 @@ export const TeacherChat: React.FC = () => {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'teacher':
-        return language === 'ar' ? 'معلمة' : 'Teacher';
+        return 'معلمة';
       case 'parent':
-        return language === 'ar' ? 'ولي أمر' : 'Parent';
+        return 'ولي أمر';
       case 'admin':
-        return language === 'ar' ? 'مدير' : 'Admin';
+        return 'مدير';
       default:
         return role;
     }
@@ -119,7 +119,7 @@ export const TeacherChat: React.FC = () => {
                 <View style={styles.userInfo}>
                   <View style={[styles.userHeader, isRTL && styles.userHeaderRTL]}>
                     <Text style={[styles.userName, isRTL && styles.textRTL]}>
-                      {language === 'ar' ? chatUser.nameAr : chatUser.name}
+                      {chatUser.nameAr || chatUser.name}
                     </Text>
                     <Text style={styles.roleBadge}>{getRoleLabel(chatUser.role)}</Text>
                   </View>
@@ -168,7 +168,7 @@ export const TeacherChat: React.FC = () => {
         </TouchableOpacity>
         <View style={[styles.chatUserInfo, isRTL && styles.chatUserInfoRTL]}>
           <Text style={[styles.chatUserName, isRTL && styles.textRTL]}>
-            {language === 'ar' ? selectedUser.nameAr : selectedUser.name}
+            {selectedUser.nameAr || selectedUser.name}
           </Text>
           <Text style={[styles.chatUserRole, isRTL && styles.textRTL]}>
             {getRoleLabel(selectedUser.role)}

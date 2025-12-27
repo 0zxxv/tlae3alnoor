@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,33 +8,59 @@ import {
   Alert,
   Modal,
   Image,
+  ActivityIndicator,
+  RefreshControl,
+  TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
-import { Header, Button, Input, Slideshow, Card } from '../../components';
-import { mockSlideshow as initialSlideshow } from '../../data/mockData';
+import { Header, Slideshow, Card } from '../../components';
+import { slideshowApi } from '../../services/api';
 import { SlideShowImage } from '../../types';
 
 export const AdminSlideshow: React.FC = () => {
-  const { t, isRTL, language } = useLanguage();
-  const [slides, setSlides] = useState<SlideShowImage[]>(initialSlideshow);
+  const { t, isRTL } = useLanguage();
+  const [slides, setSlides] = useState<SlideShowImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [title, setTitle] = useState('');
   const [titleAr, setTitleAr] = useState('');
   const [imageUri, setImageUri] = useState('');
+
+  const fetchSlides = useCallback(async () => {
+    try {
+      const data = await slideshowApi.getAll(true);
+      setSlides(data.map((s: any) => ({
+        id: s.id.toString(),
+        uri: s.image_url,
+        title: s.title || s.title_ar,
+        titleAr: s.title_ar || s.title,
+      })));
+    } catch (error) {
+      console.error('Error fetching slides:', error);
+      Alert.alert('خطأ', 'فشل في تحميل الصور');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSlides();
+  }, [fetchSlides]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchSlides();
+  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
-      Alert.alert(
-        language === 'ar' ? 'إذن مطلوب' : 'Permission Required',
-        language === 'ar'
-          ? 'نحتاج إذن الوصول إلى الصور'
-          : 'We need permission to access your photos'
-      );
+      Alert.alert('إذن مطلوب', 'نحتاج إذن الوصول إلى الصور');
       return;
     }
 
@@ -50,66 +76,73 @@ export const AdminSlideshow: React.FC = () => {
     }
   };
 
-  const handleAddSlide = () => {
-    if (!title || !imageUri) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى إضافة عنوان وصورة' : 'Please add a title and image'
-      );
+  const handleAddSlide = async () => {
+    if (!titleAr || !imageUri) {
+      Alert.alert('خطأ', 'يرجى إضافة عنوان وصورة');
       return;
     }
 
-    const newSlide: SlideShowImage = {
-      id: `slide${Date.now()}`,
-      uri: imageUri,
-      title,
-      titleAr: titleAr || title,
-    };
-
-    setSlides([...slides, newSlide]);
-    Alert.alert(
-      language === 'ar' ? 'نجاح' : 'Success',
-      language === 'ar' ? 'تمت إضافة الصورة بنجاح' : 'Slide added successfully'
-    );
-
-    // Reset form
-    setTitle('');
-    setTitleAr('');
-    setImageUri('');
-    setModalVisible(false);
+    try {
+      await slideshowApi.create({
+        title: titleAr,
+        title_ar: titleAr,
+        image_url: imageUri,
+        is_active: true,
+      });
+      
+      Alert.alert('نجاح', 'تمت إضافة الصورة بنجاح');
+      setTitleAr('');
+      setImageUri('');
+      setModalVisible(false);
+      fetchSlides();
+    } catch (error: any) {
+      Alert.alert('خطأ', error.message);
+    }
   };
 
   const handleDeleteSlide = (slideId: string) => {
     Alert.alert(
-      language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      language === 'ar'
-        ? 'هل أنت متأكد من حذف هذه الصورة؟'
-        : 'Are you sure you want to delete this slide?',
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذه الصورة؟',
       [
+        { text: 'إلغاء', style: 'cancel' },
         {
-          text: t('cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('delete'),
+          text: 'حذف',
           style: 'destructive',
-          onPress: () => {
-            setSlides(slides.filter((s) => s.id !== slideId));
-            Alert.alert(
-              language === 'ar' ? 'نجاح' : 'Success',
-              language === 'ar' ? 'تم حذف الصورة بنجاح' : 'Slide deleted successfully'
-            );
+          onPress: async () => {
+            try {
+              await slideshowApi.delete(slideId);
+              Alert.alert('نجاح', 'تم حذف الصورة بنجاح');
+              fetchSlides();
+            } catch (error: any) {
+              Alert.alert('خطأ', error.message);
+            }
           },
         },
       ]
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Header showLogout />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Header showLogout />
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="images" size={28} color={colors.primary} />
@@ -117,29 +150,26 @@ export const AdminSlideshow: React.FC = () => {
               {t('slideshow')}
             </Text>
           </View>
-          <Button
-            title={t('addSlide')}
-            onPress={() => setModalVisible(true)}
-            icon={<Ionicons name="add-circle-outline" size={18} color={colors.textLight} />}
-          />
+          <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <Ionicons name="add-circle-outline" size={18} color={colors.textLight} />
+            <Text style={styles.addButtonText}>{t('addSlide')}</Text>
+          </TouchableOpacity>
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {language === 'ar'
-            ? `${slides.length} صورة في العرض`
-            : `${slides.length} slides in slideshow`}
+          {slides.length} صورة في العرض
         </Text>
 
         {/* Preview */}
         {slides.length > 0 && (
-          <Card title={language === 'ar' ? 'معاينة العرض' : 'Slideshow Preview'}>
+          <Card title="معاينة العرض" titleAr="معاينة العرض">
             <Slideshow images={slides} />
           </Card>
         )}
 
         {/* Slides Management */}
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          {language === 'ar' ? 'إدارة الصور' : 'Manage Slides'}
+          إدارة الصور
         </Text>
 
         {slides.map((slide) => (
@@ -148,7 +178,7 @@ export const AdminSlideshow: React.FC = () => {
               <Image source={{ uri: slide.uri }} style={styles.slideImage} />
               <View style={styles.slideInfo}>
                 <Text style={[styles.slideTitle, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? slide.titleAr : slide.title}
+                  {slide.titleAr || slide.title}
                 </Text>
               </View>
               <TouchableOpacity
@@ -165,7 +195,7 @@ export const AdminSlideshow: React.FC = () => {
           <View style={styles.noData}>
             <Ionicons name="images-outline" size={48} color={colors.border} />
             <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
-              {language === 'ar' ? 'لا توجد صور' : 'No slides yet'}
+              لا توجد صور
             </Text>
           </View>
         )}
@@ -195,44 +225,36 @@ export const AdminSlideshow: React.FC = () => {
                 ) : (
                   <View style={styles.imagePickerPlaceholder}>
                     <Ionicons name="camera" size={48} color={colors.textSecondary} />
-                    <Text style={styles.imagePickerText}>
-                      {language === 'ar' ? 'اختر صورة' : 'Choose Image'}
-                    </Text>
+                    <Text style={styles.imagePickerText}>اختر صورة</Text>
                   </View>
                 )}
               </TouchableOpacity>
 
-              <Input
-                label={language === 'ar' ? 'العنوان (إنجليزي)' : 'Title (English)'}
-                value={title}
-                onChangeText={setTitle}
-                placeholder={language === 'ar' ? 'أدخل عنوان الصورة' : 'Enter slide title'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'العنوان (عربي)' : 'Title (Arabic)'}
+              <TextInput
+                style={[styles.input, styles.inputRTL]}
+                placeholder="عنوان الصورة"
                 value={titleAr}
                 onChangeText={setTitleAr}
-                placeholder={language === 'ar' ? 'أدخل العنوان بالعربية' : 'Enter title in Arabic'}
+                placeholderTextColor={colors.textSecondary}
               />
 
               <View style={styles.modalButtons}>
-                <Button
-                  title={t('cancel')}
-                  variant="outline"
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
                   onPress={() => {
                     setModalVisible(false);
                     setImageUri('');
-                    setTitle('');
                     setTitleAr('');
                   }}
-                  style={styles.modalButton}
-                />
-                <Button
-                  title={t('submit')}
+                >
+                  <Text style={styles.cancelButtonText}>إلغاء</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.submitButton]}
                   onPress={handleAddSlide}
-                  style={styles.modalButton}
-                />
+                >
+                  <Text style={styles.submitButtonText}>إضافة</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </ScrollView>
@@ -250,6 +272,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -271,6 +298,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6,
+  },
+  addButtonText: {
+    color: colors.textLight,
+    fontWeight: 'bold',
   },
   subtitle: {
     fontSize: 14,
@@ -375,6 +415,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
   },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16,
+    color: colors.text,
+    backgroundColor: colors.card,
+  },
+  inputRTL: {
+    textAlign: 'right',
+  },
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -382,5 +435,22 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.backgroundSecondary,
+  },
+  cancelButtonText: {
+    color: colors.text,
+    fontWeight: '600',
+  },
+  submitButton: {
+    backgroundColor: colors.primary,
+  },
+  submitButtonText: {
+    color: colors.textLight,
+    fontWeight: '600',
   },
 });

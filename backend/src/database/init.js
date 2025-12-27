@@ -28,7 +28,7 @@ async function initializeDatabase() {
   // Enable foreign keys
   db.run('PRAGMA foreign_keys = ON');
 
-  // Parents table
+  // Parents table - relationship field for aunt, cousin, etc.
   db.run(`
     CREATE TABLE IF NOT EXISTS parents (
       id TEXT PRIMARY KEY,
@@ -36,6 +36,7 @@ async function initializeDatabase() {
       password TEXT NOT NULL,
       name TEXT NOT NULL,
       name_ar TEXT NOT NULL,
+      relationship TEXT DEFAULT 'ولي أمر',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -82,7 +83,7 @@ async function initializeDatabase() {
   db.run(`
     CREATE TABLE IF NOT EXISTS slideshow (
       id TEXT PRIMARY KEY,
-      uri TEXT NOT NULL,
+      image_url TEXT NOT NULL,
       title TEXT NOT NULL,
       title_ar TEXT NOT NULL,
       display_order INTEGER DEFAULT 0,
@@ -192,16 +193,16 @@ async function initializeDatabase() {
     )
   `);
 
-  // Evaluation Answers
+  // Evaluation Answers - using fixed 3 answer types: completed, needs_followup, notes
   db.run(`
     CREATE TABLE IF NOT EXISTS evaluation_answers (
       id TEXT PRIMARY KEY,
       evaluation_id TEXT NOT NULL,
       question_id TEXT NOT NULL,
-      selected_option_id TEXT NOT NULL,
+      answer_type TEXT NOT NULL DEFAULT 'completed',
+      notes TEXT,
       FOREIGN KEY (evaluation_id) REFERENCES student_evaluations(id) ON DELETE CASCADE,
-      FOREIGN KEY (question_id) REFERENCES evaluation_questions(id),
-      FOREIGN KEY (selected_option_id) REFERENCES evaluation_answer_options(id)
+      FOREIGN KEY (question_id) REFERENCES evaluation_questions(id)
     )
   `);
 
