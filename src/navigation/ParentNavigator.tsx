@@ -12,6 +12,7 @@ import {
   ParentGrades,
   ParentAnnouncements,
   ParentEvents,
+  ParentEvaluations,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -23,6 +24,7 @@ const ParentStack = () => (
     <Stack.Screen name="ParentGrades" component={ParentGrades} />
     <Stack.Screen name="ParentAnnouncements" component={ParentAnnouncements} />
     <Stack.Screen name="ParentEvents" component={ParentEvents} />
+    <Stack.Screen name="ParentEvaluations" component={ParentEvaluations} />
   </Stack.Navigator>
 );
 
@@ -89,6 +91,20 @@ const ParentTabs: React.FC = () => {
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'calendar' : 'calendar-outline'} 
+              size={24} 
+              color={color} 
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Evaluations"
+        component={ParentEvaluations}
+        options={{
+          tabBarLabel: 'Evaluations',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? 'clipboard' : 'clipboard-outline'} 
               size={24} 
               color={color} 
             />

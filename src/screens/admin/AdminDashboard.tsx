@@ -19,7 +19,10 @@ export const AdminDashboard: React.FC = () => {
   const navigation = useNavigation<any>();
 
   const quickActions = [
-    { id: 'students', title: t('students'), titleAr: 'الطلاب', icon: 'school' as const, screen: 'AdminStudents' },
+    { id: 'parents', title: 'Parents', titleAr: 'أولياء الأمور', icon: 'people' as const, screen: 'AdminParents' },
+    { id: 'teachers', title: 'Teachers', titleAr: 'المعلمات', icon: 'person' as const, screen: 'AdminTeachers' },
+    { id: 'students', title: t('students'), titleAr: 'الطالبات', icon: 'school' as const, screen: 'AdminStudents' },
+    { id: 'evaluations', title: 'Evaluation Forms', titleAr: 'نماذج التقييم', icon: 'clipboard' as const, screen: 'AdminEvaluationForms' },
     { id: 'events', title: t('events'), titleAr: 'الفعاليات', icon: 'calendar' as const, screen: 'AdminEvents' },
     { id: 'slideshow', title: t('slideshow'), titleAr: 'عرض الصور', icon: 'images' as const, screen: 'AdminSlideshow' },
   ];

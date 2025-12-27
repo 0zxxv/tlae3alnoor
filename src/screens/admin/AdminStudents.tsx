@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,61 +6,57 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Modal,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
-import { Header, Button, Input, Card } from '../../components';
-import { mockStudents as initialStudents } from '../../data/mockData';
-import { Student } from '../../types';
+import { Header, Card } from '../../components';
+import { studentsApi } from '../../services/api';
+
+interface Student {
+  id: string;
+  name: string;
+  name_ar: string;
+  grade: string;
+  grade_ar: string;
+  parent_name?: string;
+  parent_name_ar?: string;
+}
 
 export const AdminStudents: React.FC = () => {
   const { t, isRTL, language } = useLanguage();
-  const [students, setStudents] = useState<Student[]>(initialStudents);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [name, setName] = useState('');
-  const [nameAr, setNameAr] = useState('');
-  const [grade, setGrade] = useState('');
-  const [gradeAr, setGradeAr] = useState('');
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const handleAddStudent = () => {
-    if (!name || !grade) {
-      Alert.alert(
-        language === 'ar' ? 'خطأ' : 'Error',
-        language === 'ar' ? 'يرجى ملء جميع الحقول' : 'Please fill all fields'
-      );
-      return;
+  const fetchStudents = useCallback(async () => {
+    try {
+      const data = await studentsApi.getAll();
+      setStudents(data);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
+  }, []);
 
-    const newStudent: Student = {
-      id: `student${Date.now()}`,
-      name,
-      nameAr: nameAr || name,
-      grade,
-      gradeAr: gradeAr || grade,
-      parentId: 'parent1',
-    };
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
-    setStudents([...students, newStudent]);
-    Alert.alert(
-      language === 'ar' ? 'نجاح' : 'Success',
-      language === 'ar' ? 'تمت إضافة الطالب بنجاح' : 'Student added successfully'
-    );
-
-    // Reset form
-    setName('');
-    setNameAr('');
-    setGrade('');
-    setGradeAr('');
-    setModalVisible(false);
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchStudents();
   };
 
-  const handleDeleteStudent = (studentId: string) => {
+  const handleDeleteStudent = (student: Student) => {
     Alert.alert(
       language === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
       language === 'ar'
-        ? 'هل أنت متأكد من حذف هذا الطالب؟'
+        ? 'هل أنت متأكد من حذف هذه الطالبة؟'
         : 'Are you sure you want to delete this student?',
       [
         {
@@ -70,23 +66,43 @@ export const AdminStudents: React.FC = () => {
         {
           text: t('delete'),
           style: 'destructive',
-          onPress: () => {
-            setStudents(students.filter((s) => s.id !== studentId));
-            Alert.alert(
-              language === 'ar' ? 'نجاح' : 'Success',
-              language === 'ar' ? 'تم حذف الطالب بنجاح' : 'Student deleted successfully'
-            );
+          onPress: async () => {
+            try {
+              await studentsApi.delete(student.id);
+              fetchStudents();
+              Alert.alert(
+                language === 'ar' ? 'نجاح' : 'Success',
+                language === 'ar' ? 'تم حذف الطالبة بنجاح' : 'Student deleted successfully'
+              );
+            } catch (error: any) {
+              Alert.alert(language === 'ar' ? 'خطأ' : 'Error', error.message);
+            }
           },
         },
       ]
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Header title={language === 'ar' ? 'الطالبات' : 'Students'} showBack />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Header showLogout />
+      <Header title={language === 'ar' ? 'الطالبات' : 'Students'} showBack />
       
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="school" size={28} color={colors.primary} />
@@ -94,17 +110,18 @@ export const AdminStudents: React.FC = () => {
               {t('students')}
             </Text>
           </View>
-          <Button
-            title={t('addStudent')}
-            onPress={() => setModalVisible(true)}
-            icon={<Ionicons name="person-add" size={18} color={colors.textLight} />}
-          />
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
           {language === 'ar'
-            ? `${students.length} طالب مسجل`
+            ? `${students.length} طالبة مسجلة`
             : `${students.length} students registered`}
+        </Text>
+
+        <Text style={[styles.infoText, isRTL && styles.textRTL]}>
+          {language === 'ar'
+            ? 'لإضافة طالبة جديدة، اذهب إلى إدارة أولياء الأمور'
+            : 'To add a new student, go to Parents management'}
         </Text>
 
         {/* Students List */}
@@ -116,88 +133,39 @@ export const AdminStudents: React.FC = () => {
               </View>
               <View style={styles.studentInfo}>
                 <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? student.nameAr : student.name}
+                  {language === 'ar' ? student.name_ar : student.name}
                 </Text>
                 <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
                   <Ionicons name="school-outline" size={12} color={colors.textSecondary} />
                   <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                    {language === 'ar' ? student.gradeAr : student.grade}
+                    {language === 'ar' ? student.grade_ar : student.grade}
                   </Text>
                 </View>
+                {student.parent_name && (
+                  <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
+                    <Ionicons name="people-outline" size={12} color={colors.primary} />
+                    <Text style={[styles.parentName, isRTL && styles.textRTL]}>
+                      {language === 'ar' ? student.parent_name_ar : student.parent_name}
+                    </Text>
+                  </View>
+                )}
               </View>
               <TouchableOpacity
                 style={styles.deleteButton}
-                onPress={() => handleDeleteStudent(student.id)}
+                onPress={() => handleDeleteStudent(student)}
               >
                 <Ionicons name="trash-outline" size={20} color={colors.error} />
               </TouchableOpacity>
             </View>
           </Card>
         ))}
+
+        {students.length === 0 && (
+          <Text style={styles.emptyText}>
+            {language === 'ar' ? 'لا توجد طالبات مسجلات' : 'No students registered'}
+          </Text>
+        )}
       </ScrollView>
-
-      {/* Add Student Modal */}
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <ScrollView style={styles.modalScrollView}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Ionicons name="person-add" size={28} color={colors.primary} />
-                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                  {t('addStudent')}
-                </Text>
-              </View>
-
-              <Input
-                label={language === 'ar' ? 'اسم الطالب (إنجليزي)' : 'Student Name (English)'}
-                value={name}
-                onChangeText={setName}
-                placeholder={language === 'ar' ? 'أدخل اسم الطالب' : 'Enter student name'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'اسم الطالب (عربي)' : 'Student Name (Arabic)'}
-                value={nameAr}
-                onChangeText={setNameAr}
-                placeholder={language === 'ar' ? 'أدخل اسم الطالب بالعربية' : 'Enter name in Arabic'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'الصف (إنجليزي)' : 'Grade (English)'}
-                value={grade}
-                onChangeText={setGrade}
-                placeholder={language === 'ar' ? 'مثال: Grade 3' : 'e.g., Grade 3'}
-              />
-
-              <Input
-                label={language === 'ar' ? 'الصف (عربي)' : 'Grade (Arabic)'}
-                value={gradeAr}
-                onChangeText={setGradeAr}
-                placeholder={language === 'ar' ? 'مثال: الصف الثالث' : 'e.g., الصف الثالث'}
-              />
-
-              <View style={styles.modalButtons}>
-                <Button
-                  title={t('cancel')}
-                  variant="outline"
-                  onPress={() => setModalVisible(false)}
-                  style={styles.modalButton}
-                />
-                <Button
-                  title={t('submit')}
-                  onPress={handleAddStudent}
-                  style={styles.modalButton}
-                />
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -210,6 +178,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -235,7 +208,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  infoText: {
+    fontSize: 13,
+    color: colors.primary,
     marginBottom: 16,
+    fontStyle: 'italic',
   },
   textRTL: {
     textAlign: 'right',
@@ -277,6 +256,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
   },
+  parentName: {
+    fontSize: 12,
+    color: colors.primary,
+  },
   deleteButton: {
     width: 44,
     height: 44,
@@ -285,38 +268,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalScrollView: {
-    maxHeight: '90%',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 24,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 8,
-  },
-  modalButton: {
-    flex: 1,
+  emptyText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    marginTop: 32,
+    fontSize: 16,
   },
 });

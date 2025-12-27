@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,13 +61,9 @@ export const SelectChildScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <View style={styles.childAvatarContainer}>
-                  {child.avatar ? (
-                    <Image source={{ uri: child.avatar }} style={styles.childAvatar} />
-                  ) : (
-                    <View style={styles.childAvatarPlaceholder}>
-                      <Ionicons name="person" size={40} color={colors.textLight} />
-                    </View>
-                  )}
+                  <View style={styles.childAvatarPlaceholder}>
+                    <Ionicons name="person" size={40} color={colors.textLight} />
+                  </View>
                 </View>
                 <Text style={[styles.childName, isRTL && styles.textRTL]}>
                   {language === 'ar' ? child.nameAr : child.name}
@@ -163,13 +158,6 @@ const styles = StyleSheet.create({
   },
   childAvatarContainer: {
     marginBottom: 12,
-  },
-  childAvatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: colors.primary,
   },
   childAvatarPlaceholder: {
     width: 80,

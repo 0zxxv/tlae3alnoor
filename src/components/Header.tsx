@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
@@ -36,13 +36,9 @@ export const Header: React.FC<HeaderProps> = ({
         <View style={styles.leftSection}>
           {user && (
             <View style={[styles.userInfo, isRTL && styles.userInfoRTL]}>
-              {user.avatar ? (
-                <Image source={{ uri: user.avatar }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Ionicons name="person" size={24} color={colors.textLight} />
-                </View>
-              )}
+              <View style={styles.avatarPlaceholder}>
+                <Ionicons name="person" size={24} color={colors.textLight} />
+              </View>
               <View>
                 <Text style={[styles.greeting, isRTL && styles.textRTL]}>{getGreeting()}</Text>
                 <Text style={[styles.userName, isRTL && styles.textRTL]}>{userName}</Text>
@@ -100,13 +96,6 @@ const styles = StyleSheet.create({
   },
   userInfoRTL: {
     flexDirection: 'row-reverse',
-  },
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    borderWidth: 2,
-    borderColor: colors.primary,
   },
   avatarPlaceholder: {
     width: 45,

@@ -8,7 +8,6 @@ export const mockUsers: User[] = [
     nameAr: 'سارة أحمد',
     email: 'teacher@tlae3alnoor.com',
     role: 'teacher',
-    avatar: 'https://i.pravatar.cc/150?img=1',
   },
   {
     id: 'parent1',
@@ -16,15 +15,13 @@ export const mockUsers: User[] = [
     nameAr: 'محمد علي',
     email: 'parent@tlae3alnoor.com',
     role: 'parent',
-    avatar: 'https://i.pravatar.cc/150?img=3',
   },
   {
     id: 'admin1',
-    name: 'Fatima Hassan',
-    nameAr: 'فاطمة حسن',
+    name: 'Amal Alnashaba',
+    nameAr: 'أمل النشابة',
     email: 'admin@tlae3alnoor.com',
     role: 'admin',
-    avatar: 'https://i.pravatar.cc/150?img=5',
   },
 ];
 
@@ -37,7 +34,6 @@ export const mockStudents: Student[] = [
     grade: 'Grade 3',
     gradeAr: 'الصف الثالث',
     parentId: 'parent1',
-    avatar: 'https://i.pravatar.cc/150?img=10',
   },
   {
     id: 'student2',
@@ -46,7 +42,6 @@ export const mockStudents: Student[] = [
     grade: 'Grade 1',
     gradeAr: 'الصف الأول',
     parentId: 'parent1',
-    avatar: 'https://i.pravatar.cc/150?img=12',
   },
   {
     id: 'student3',
@@ -55,7 +50,6 @@ export const mockStudents: Student[] = [
     grade: 'Grade 2',
     gradeAr: 'الصف الثاني',
     parentId: 'parent2',
-    avatar: 'https://i.pravatar.cc/150?img=15',
   },
 ];
 
@@ -134,8 +128,8 @@ export const mockAnnouncements: Announcement[] = [
     contentAr: 'تم إصدار جدول الامتحانات النهائية. يرجى التحقق من بوابة درجات طفلك للتواريخ والمواد المحددة.',
     date: '2024-12-11',
     authorId: 'admin1',
-    authorName: 'Fatima Hassan',
-    authorNameAr: 'فاطمة حسن',
+    authorName: 'Amal Alnashaba',
+    authorNameAr: 'أمل النشابة',
   },
   {
     id: 'ann3',
