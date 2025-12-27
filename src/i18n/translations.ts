@@ -93,7 +93,7 @@ export const translations = {
   
   ar: {
     // App
-    appName: "طالع النور",
+    appName: "طلائع النور",
     
     // Auth
     login: "تسجيل الدخول",

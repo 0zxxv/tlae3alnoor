@@ -28,52 +28,53 @@ export const LoginScreen: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <LanguageToggle />
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.appName}>{t('appName')}</Text>
-          <Text style={styles.tagline}>
-            {isRTL ? 'تعليم بلا حدود' : 'Education Without Limits'}
-          </Text>
+    <View style={styles.container}>
+      {/* Decorative circles at bottom - positioned absolutely */}
+      <View style={styles.decorativeCircle1} />
+      <View style={styles.decorativeCircle2} />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <LanguageToggle />
         </View>
 
-        <View style={styles.roleSection}>
-          <Text style={[styles.selectRole, isRTL && styles.textRTL]}>
-            {t('selectRole')}
-          </Text>
+        <View style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.appName}>{t('appName')}</Text>
+            <Text style={styles.tagline}>
+              {isRTL ? 'تعليم بلا حدود' : 'Education Without Limits'}
+            </Text>
+          </View>
 
-          <View style={styles.rolesGrid}>
-            {roles.map(({ role, icon, label }) => (
-              <TouchableOpacity
-                key={role}
-                style={styles.roleCard}
-                onPress={() => login(role)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.roleIcon}>
-                  <Ionicons name={icon} size={32} color={colors.primary} />
-                </View>
-                <Text style={styles.roleText}>{label}</Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.roleSection}>
+            <Text style={[styles.selectRole, isRTL && styles.textRTL]}>
+              {t('selectRole')}
+            </Text>
+
+            <View style={styles.rolesGrid}>
+              {roles.map(({ role, icon, label }) => (
+                <TouchableOpacity
+                  key={role}
+                  style={styles.roleCard}
+                  onPress={() => login(role)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.roleIcon}>
+                    <Ionicons name={icon} size={32} color={colors.primary} />
+                  </View>
+                  <Text style={styles.roleText}>{label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.decorativeCircle1} />
-        <View style={styles.decorativeCircle2} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -81,6 +82,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     padding: 20,
@@ -96,8 +100,8 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 200,
+    height: 200,
     marginBottom: 16,
   },
   appName: {
@@ -160,20 +164,16 @@ const styles = StyleSheet.create({
     color: colors.text,
     textAlign: 'center',
   },
-  footer: {
-    height: 100,
-    position: 'relative',
-    overflow: 'hidden',
-  },
   decorativeCircle1: {
     position: 'absolute',
     width: 200,
     height: 200,
     borderRadius: 100,
     backgroundColor: colors.secondary,
-    bottom: -100,
+    bottom: -50,
     left: -50,
     opacity: 0.5,
+    zIndex: -1,
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -181,8 +181,9 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 75,
     backgroundColor: colors.primary,
-    bottom: -80,
+    bottom: -30,
     right: -30,
     opacity: 0.2,
+    zIndex: -1,
   },
 });

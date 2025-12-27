@@ -14,7 +14,7 @@ import { colors } from '../theme/colors';
 import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
-const SLIDE_WIDTH = width - 40;
+const SLIDE_WIDTH = width;
 
 interface SlideshowProps {
   images: SlideShowImage[];
@@ -98,14 +98,15 @@ export const Slideshow: React.FC<SlideshowProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: 16,
+    marginHorizontal: 0,
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
   },
   slide: {
     width: SLIDE_WIDTH,
     height: 180,
-    borderRadius: 16,
+    borderRadius: 0,
     overflow: 'hidden',
     marginRight: 0,
   },
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(252, 3, 144, 0.8)',
+    backgroundColor: 'rgba(165, 75, 156, 0.95)',
     paddingVertical: 12,
     paddingHorizontal: 16,
   },

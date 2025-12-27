@@ -38,7 +38,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Welcome Card */}
         <View style={styles.welcomeCard}>
           <Image
-            source={require('../../../assets/logo.png')}
+            source={require('../../../assets/icon.png')}
             style={styles.welcomeLogo}
             resizeMode="contain"
           />

@@ -25,65 +25,66 @@ export const SelectChildScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <LanguageToggle />
-        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={20} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      {/* Decorative circles at bottom - positioned absolutely */}
+      <View style={styles.decorativeCircle1} />
+      <View style={styles.decorativeCircle2} />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <LanguageToggle />
+          <TouchableOpacity onPress={logout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="people" size={40} color={colors.primary} />
+        <View style={styles.content}>
+          <View style={styles.titleContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="people" size={40} color={colors.primary} />
+            </View>
+            <Text style={[styles.title, isRTL && styles.textRTL]}>
+              {t('selectChild')}
+            </Text>
+            <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
+              {language === 'ar'
+                ? 'اختر طفلك لعرض معلوماته'
+                : 'Choose your child to view their information'}
+            </Text>
           </View>
-          <Text style={[styles.title, isRTL && styles.textRTL]}>
-            {t('selectChild')}
-          </Text>
-          <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-            {language === 'ar'
-              ? 'اختر طفلك لعرض معلوماته'
-              : 'Choose your child to view their information'}
-          </Text>
-        </View>
 
-        <View style={styles.childrenGrid}>
-          {children.map((child) => (
-            <TouchableOpacity
-              key={child.id}
-              style={styles.childCard}
-              onPress={() => handleSelectChild(child)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.childAvatarContainer}>
-                {child.avatar ? (
-                  <Image source={{ uri: child.avatar }} style={styles.childAvatar} />
-                ) : (
-                  <View style={styles.childAvatarPlaceholder}>
-                    <Ionicons name="person" size={40} color={colors.textLight} />
-                  </View>
-                )}
-              </View>
-              <Text style={[styles.childName, isRTL && styles.textRTL]}>
-                {language === 'ar' ? child.nameAr : child.name}
-              </Text>
-              <View style={styles.gradeRow}>
-                <Ionicons name="school-outline" size={14} color={colors.primary} />
-                <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
-                  {language === 'ar' ? child.gradeAr : child.grade}
+          <View style={styles.childrenGrid}>
+            {children.map((child) => (
+              <TouchableOpacity
+                key={child.id}
+                style={styles.childCard}
+                onPress={() => handleSelectChild(child)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.childAvatarContainer}>
+                  {child.avatar ? (
+                    <Image source={{ uri: child.avatar }} style={styles.childAvatar} />
+                  ) : (
+                    <View style={styles.childAvatarPlaceholder}>
+                      <Ionicons name="person" size={40} color={colors.textLight} />
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.childName, isRTL && styles.textRTL]}>
+                  {language === 'ar' ? child.nameAr : child.name}
                 </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+                <View style={styles.gradeRow}>
+                  <Ionicons name="school-outline" size={14} color={colors.primary} />
+                  <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
+                    {language === 'ar' ? child.gradeAr : child.grade}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
-
-      <View style={styles.footer}>
-        <View style={styles.decorativeCircle1} />
-        <View style={styles.decorativeCircle2} />
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
@@ -91,6 +92,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -192,20 +196,16 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '500',
   },
-  footer: {
-    height: 100,
-    position: 'relative',
-    overflow: 'hidden',
-  },
   decorativeCircle1: {
     position: 'absolute',
     width: 200,
     height: 200,
     borderRadius: 100,
     backgroundColor: colors.secondary,
-    bottom: -100,
+    bottom: -50,
     left: -50,
     opacity: 0.5,
+    zIndex: -1,
   },
   decorativeCircle2: {
     position: 'absolute',
@@ -213,8 +213,9 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 75,
     backgroundColor: colors.primary,
-    bottom: -80,
+    bottom: -30,
     right: -30,
     opacity: 0.2,
+    zIndex: -1,
   },
 });

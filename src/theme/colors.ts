@@ -1,10 +1,10 @@
 export const colors = {
-  primary: '#fc0390',
-  primaryLight: '#ff5cb8',
-  primaryDark: '#c40070',
-  secondary: '#f8e1ed',
+  primary: '#A54B9C',
+  primaryLight: '#C76FBF',
+  primaryDark: '#7A3573',
+  secondary: '#f3e5f1',
   background: '#ffffff',
-  backgroundSecondary: '#fdf5f9',
+  backgroundSecondary: '#faf5f9',
   text: '#1a1a2e',
   textSecondary: '#666680',
   textLight: '#ffffff',
@@ -13,11 +13,11 @@ export const colors = {
   warning: '#ff9800',
   error: '#f44336',
   card: '#ffffff',
-  shadow: 'rgba(252, 3, 144, 0.15)',
+  shadow: 'rgba(165, 75, 156, 0.15)',
 };
 
 export const gradients = {
-  primary: ['#fc0390', '#ff5cb8'],
-  secondary: ['#fdf5f9', '#ffffff'],
+  primary: ['#A54B9C', '#C76FBF'],
+  secondary: ['#faf5f9', '#ffffff'],
 };
 
