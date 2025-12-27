@@ -1,9 +1,9 @@
-// Academy classes
+// Academy classes with cute icons
 export const ACADEMY_CLASSES = [
-  { id: 'baraem', name: 'البراعم', nameAr: 'البراعم' },
-  { id: 'takleef', name: 'التكليف', nameAr: 'التكليف' },
-  { id: 'yasmin', name: 'الياسمين', nameAr: 'الياسمين' },
-  { id: 'rayaheen', name: 'الرياحين', nameAr: 'الرياحين' },
+  { id: 'baraem', name: 'البراعم', nameAr: 'البراعم', icon: 'flower' },
+  { id: 'takleef', name: 'التكليف', nameAr: 'التكليف', icon: 'star' },
+  { id: 'yasmin', name: 'الياسمين', nameAr: 'الياسمين', icon: 'rose' },
+  { id: 'rayaheen', name: 'الرياحين', nameAr: 'الرياحين', icon: 'leaf' },
 ];
 
 // Evaluation categories for students

@@ -132,7 +132,7 @@ export const AdminStudents: React.FC = () => {
                 onPress={() => setSelectedClass(cls.nameAr)}
               >
                 <View style={styles.classIcon}>
-                  <Ionicons name="people" size={32} color={colors.primary} />
+                  <Ionicons name={cls.icon as any} size={32} color={colors.primary} />
                 </View>
                 <Text style={styles.className}>{cls.nameAr}</Text>
                 <Text style={styles.classCount}>
