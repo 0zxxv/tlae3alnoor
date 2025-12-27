@@ -58,7 +58,7 @@ export const LoginScreen: React.FC = () => {
               resizeMode="contain"
             />
             <Text style={styles.appName}>{t('appName')}</Text>
-            <Text style={styles.tagline}>تعليم بلا حدود</Text>
+            <Text style={styles.tagline}>ننشر النور في كل مكان</Text>
           </View>
 
           <View style={styles.roleSection}>

@@ -278,10 +278,10 @@ function insertSampleData() {
     [teacher1Id, '0509876543', hashedPassword, 'Sara Abdullah', 'سارة عبدالله']);
 
   // Sample Slideshow
-  db.run(`INSERT INTO slideshow (id, uri, title, title_ar, display_order) VALUES (?, ?, ?, ?, ?)`,
+  db.run(`INSERT INTO slideshow (id, image_url, title, title_ar, display_order) VALUES (?, ?, ?, ?, ?)`,
     [uuidv4(), 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800', 'Welcome to Our Academy', 'مرحباً بكم في أكاديميتنا', 1]);
   
-  db.run(`INSERT INTO slideshow (id, uri, title, title_ar, display_order) VALUES (?, ?, ?, ?, ?)`,
+  db.run(`INSERT INTO slideshow (id, image_url, title, title_ar, display_order) VALUES (?, ?, ?, ?, ?)`,
     [uuidv4(), 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800', 'Excellence in Education', 'التميز في التعليم', 2]);
 
   // Sample Events

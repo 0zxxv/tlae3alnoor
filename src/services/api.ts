@@ -2,7 +2,7 @@
 // For Android emulator: use 10.0.2.2
 // For iOS simulator: use localhost
 // For physical device: use your computer's IP address
-const API_BASE_URL = 'http://172.20.10.11:3000/api';
+const API_BASE_URL = 'http://192.168.100.12:3000/api';
 
 // Helper function for API calls
 async function apiCall<T>(
