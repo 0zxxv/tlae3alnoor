@@ -14,6 +14,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card } from '../../components';
 import { studentsApi } from '../../services/api';
+import { ACADEMY_CLASSES } from '../../constants/classes';
 
 interface Student {
   id: string;
@@ -21,6 +22,7 @@ interface Student {
   name_ar: string;
   grade: string;
   grade_ar: string;
+  class_name?: string;
   parent_name?: string;
   parent_name_ar?: string;
 }
@@ -30,6 +32,7 @@ export const AdminStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -75,6 +78,16 @@ export const AdminStudents: React.FC = () => {
     );
   };
 
+  // Filter students by selected class
+  const filteredStudents = selectedClass
+    ? students.filter((s) => s.class_name === selectedClass || s.grade_ar === selectedClass)
+    : students;
+
+  // Get student count by class
+  const getClassCount = (className: string) => {
+    return students.filter((s) => s.class_name === className || s.grade_ar === className).length;
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -82,6 +95,62 @@ export const AdminStudents: React.FC = () => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      </View>
+    );
+  }
+
+  // Show class selection first if no class is selected
+  if (!selectedClass) {
+    return (
+      <View style={styles.container}>
+        <Header title="الطالبات" />
+        
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          <View style={styles.header}>
+            <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+              <Ionicons name="school" size={28} color={colors.primary} />
+              <Text style={[styles.title, isRTL && styles.textRTL]}>
+                اختر الصف
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
+            {students.length} طالبة مسجلة في الأكاديمية
+          </Text>
+
+          {/* Classes Grid */}
+          <View style={styles.classesGrid}>
+            {ACADEMY_CLASSES.map((cls) => (
+              <TouchableOpacity
+                key={cls.id}
+                style={styles.classCard}
+                onPress={() => setSelectedClass(cls.nameAr)}
+              >
+                <View style={styles.classIcon}>
+                  <Ionicons name="people" size={32} color={colors.primary} />
+                </View>
+                <Text style={styles.className}>{cls.nameAr}</Text>
+                <Text style={styles.classCount}>
+                  {getClassCount(cls.nameAr)} طالبة
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* View All Button */}
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            onPress={() => setSelectedClass('all')}
+          >
+            <Ionicons name="list" size={20} color={colors.textLight} />
+            <Text style={styles.viewAllText}>عرض جميع الطالبات</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     );
   }
@@ -95,17 +164,26 @@ export const AdminStudents: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* Back to classes */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setSelectedClass(null)}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للصفوف</Text>
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="school" size={28} color={colors.primary} />
             <Text style={[styles.title, isRTL && styles.textRTL]}>
-              {t('students')}
+              {selectedClass === 'all' ? 'جميع الطالبات' : `صف ${selectedClass}`}
             </Text>
           </View>
         </View>
 
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {students.length} طالبة مسجلة
+          {selectedClass === 'all' ? students.length : filteredStudents.length} طالبة
         </Text>
 
         <Text style={[styles.infoText, isRTL && styles.textRTL]}>
@@ -113,7 +191,7 @@ export const AdminStudents: React.FC = () => {
         </Text>
 
         {/* Students List */}
-        {students.map((student) => (
+        {(selectedClass === 'all' ? students : filteredStudents).map((student) => (
           <Card key={student.id}>
             <View style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
@@ -126,7 +204,7 @@ export const AdminStudents: React.FC = () => {
                 <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
                   <Ionicons name="school-outline" size={12} color={colors.textSecondary} />
                   <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                    {student.grade_ar || student.grade}
+                    {student.class_name || student.grade_ar || student.grade}
                   </Text>
                 </View>
                 {student.parent_name && (
@@ -148,8 +226,11 @@ export const AdminStudents: React.FC = () => {
           </Card>
         ))}
 
-        {students.length === 0 && (
-          <Text style={styles.emptyText}>لا توجد طالبات مسجلات</Text>
+        {(selectedClass === 'all' ? students : filteredStudents).length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="school-outline" size={64} color={colors.border} />
+            <Text style={styles.emptyText}>لا توجد طالبات في هذا الصف</Text>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -194,7 +275,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 8,
+    marginBottom: 16,
     textAlign: 'right',
   },
   infoText: {
@@ -206,6 +287,65 @@ const styles = StyleSheet.create({
   },
   textRTL: {
     textAlign: 'right',
+  },
+  classesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  classCard: {
+    width: '48%',
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  classIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  className: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  classCount: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  viewAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  viewAllText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textLight,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
   studentItem: {
     flexDirection: 'row',
@@ -256,10 +396,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 48,
+  },
   emptyText: {
     textAlign: 'center',
     color: colors.textSecondary,
-    marginTop: 32,
+    marginTop: 16,
     fontSize: 16,
   },
 });

@@ -16,6 +16,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header } from '../../components';
 import { parentsApi, studentsApi } from '../../services/api';
+import { ACADEMY_CLASSES } from '../../constants/classes';
 
 interface Parent {
   id: string;
@@ -53,7 +54,7 @@ export const AdminParents: React.FC = () => {
 
   // Student form
   const [studentNameAr, setStudentNameAr] = useState('');
-  const [studentGradeAr, setStudentGradeAr] = useState('');
+  const [studentClass, setStudentClass] = useState('');
 
   const fetchParents = useCallback(async () => {
     try {
@@ -159,7 +160,7 @@ export const AdminParents: React.FC = () => {
   };
 
   const handleAddStudent = async () => {
-    if (!studentNameAr || !studentGradeAr || !selectedParent) {
+    if (!studentNameAr || !studentClass || !selectedParent) {
       Alert.alert('خطأ', 'جميع الحقول مطلوبة');
       return;
     }
@@ -169,11 +170,12 @@ export const AdminParents: React.FC = () => {
         parent_id: selectedParent.id,
         name: studentNameAr,
         name_ar: studentNameAr,
-        grade: studentGradeAr,
-        grade_ar: studentGradeAr,
+        grade: studentClass,
+        grade_ar: studentClass,
+        class_name: studentClass,
       });
       setStudentNameAr('');
-      setStudentGradeAr('');
+      setStudentClass('');
       const children = await studentsApi.getByParent(selectedParent.id);
       setParentChildren(children);
       fetchParents();
@@ -392,13 +394,30 @@ export const AdminParents: React.FC = () => {
                 onChangeText={setStudentNameAr}
                 placeholderTextColor={colors.textSecondary}
               />
-              <TextInput
-                style={[styles.input, styles.inputRTL]}
-                placeholder="الصف"
-                value={studentGradeAr}
-                onChangeText={setStudentGradeAr}
-                placeholderTextColor={colors.textSecondary}
-              />
+              
+              <Text style={styles.classLabel}>اختر الصف:</Text>
+              <View style={styles.classSelector}>
+                {ACADEMY_CLASSES.map((cls) => (
+                  <TouchableOpacity
+                    key={cls.id}
+                    style={[
+                      styles.classOption,
+                      studentClass === cls.nameAr && styles.classOptionSelected,
+                    ]}
+                    onPress={() => setStudentClass(cls.nameAr)}
+                  >
+                    <Text
+                      style={[
+                        styles.classOptionText,
+                        studentClass === cls.nameAr && styles.classOptionTextSelected,
+                      ]}
+                    >
+                      {cls.nameAr}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
               <TouchableOpacity style={styles.addStudentButton} onPress={handleAddStudent}>
                 <Text style={styles.addStudentButtonText}>إضافة الطالبة</Text>
               </TouchableOpacity>
@@ -641,5 +660,38 @@ const styles = StyleSheet.create({
   addStudentButtonText: {
     color: colors.textLight,
     fontWeight: 'bold',
+  },
+  classLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+    textAlign: 'right',
+  },
+  classSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  classOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  classOptionSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  classOptionText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  classOptionTextSelected: {
+    color: colors.textLight,
   },
 });

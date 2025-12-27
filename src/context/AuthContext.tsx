@@ -40,6 +40,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (role: UserRole) => {
     try {
+      // Guest login doesn't need API call
+      if (role === 'guest') {
+        const guestUser: User = {
+          id: 'guest',
+          name: 'Guest',
+          nameAr: 'زائر',
+          email: '',
+          role: 'guest',
+        };
+        setUser(guestUser);
+        return;
+      }
+
       const response = await authApi.demoLogin(role);
       const userData = response.user;
       

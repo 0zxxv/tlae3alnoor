@@ -25,30 +25,30 @@ export const mockUsers: User[] = [
   },
 ];
 
-// Students
+// Students - with academy classes
 export const mockStudents: Student[] = [
   {
     id: 'student1',
     name: 'Layla Mohammed',
     nameAr: 'ليلى محمد',
-    grade: 'Grade 3',
-    gradeAr: 'الصف الثالث',
+    grade: 'البراعم',
+    gradeAr: 'البراعم',
     parentId: 'parent1',
   },
   {
     id: 'student2',
-    name: 'Omar Mohammed',
-    nameAr: 'عمر محمد',
-    grade: 'Grade 1',
-    gradeAr: 'الصف الأول',
+    name: 'Sara Mohammed',
+    nameAr: 'سارة محمد',
+    grade: 'التكليف',
+    gradeAr: 'التكليف',
     parentId: 'parent1',
   },
   {
     id: 'student3',
     name: 'Noor Khalid',
     nameAr: 'نور خالد',
-    grade: 'Grade 2',
-    gradeAr: 'الصف الثاني',
+    grade: 'الياسمين',
+    gradeAr: 'الياسمين',
     parentId: 'parent2',
   },
 ];

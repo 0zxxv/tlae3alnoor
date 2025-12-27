@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import { Header } from '../../components';
 import { evaluationsApi } from '../../services/api';
+import { EVALUATION_CATEGORIES } from '../../constants/classes';
 
 const { width } = Dimensions.get('window');
 
@@ -41,6 +42,15 @@ const ANSWER_LABELS: { [key: string]: { label: string; color: string; icon: stri
   completed: { label: 'أنجزت', color: colors.success, icon: 'checkmark-circle' },
   needs_followup: { label: 'تحتاج متابعة', color: colors.warning, icon: 'alert-circle' },
   notes: { label: 'ملاحظات', color: colors.textSecondary, icon: 'create' },
+};
+
+// Category icons mapping
+const CATEGORY_ICONS: { [key: string]: string } = {
+  'الوضوء': 'water',
+  'الصلاة': 'moon',
+  'السلوك': 'heart',
+  'المشاركة': 'hand-left',
+  'الحجاب': 'shirt',
 };
 
 export const ParentEvaluations: React.FC = () => {
@@ -91,94 +101,41 @@ export const ParentEvaluations: React.FC = () => {
     }
   };
 
-  // Calculate stats for bar chart
-  const calculateStats = (answers: EvaluationAnswer[] | undefined) => {
-    if (!answers || answers.length === 0) {
-      return { completed: 0, needs_followup: 0, notes: 0, total: 0 };
+  // Get latest evaluation status for each category
+  const getCategoryStatus = (categoryName: string) => {
+    // Find the latest evaluation that includes this category
+    for (const evaluation of evaluations) {
+      if (evaluation.answers) {
+        const answer = evaluation.answers.find(a => 
+          a.question_ar === categoryName || a.question === categoryName
+        );
+        if (answer) {
+          return answer.answer_type;
+        }
+      }
     }
-    
-    const stats = { completed: 0, needs_followup: 0, notes: 0, total: answers.length };
-    answers.forEach(a => {
-      if (a.answer_type === 'completed') stats.completed++;
-      else if (a.answer_type === 'needs_followup') stats.needs_followup++;
-      else if (a.answer_type === 'notes') stats.notes++;
-    });
-    return stats;
+    return null;
   };
 
-  // Simple bar chart component
-  const BarChart = ({ evaluation }: { evaluation: Evaluation }) => {
-    const stats = calculateStats(evaluation.answers);
-    const barWidth = (width - 80) * 0.8;
-    
-    if (stats.total === 0) return null;
-
-    return (
-      <View style={styles.barChartContainer}>
-        <View style={styles.barRow}>
-          <View style={styles.barLabelContainer}>
-            <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-            <Text style={styles.barLabel}>أنجزت</Text>
-          </View>
-          <View style={styles.barBackground}>
-            <View 
-              style={[
-                styles.barFill, 
-                { 
-                  width: `${(stats.completed / stats.total) * 100}%`,
-                  backgroundColor: colors.success,
-                }
-              ]} 
-            />
-          </View>
-          <Text style={styles.barCount}>{stats.completed}</Text>
-        </View>
-
-        <View style={styles.barRow}>
-          <View style={styles.barLabelContainer}>
-            <Ionicons name="alert-circle" size={16} color={colors.warning} />
-            <Text style={styles.barLabel}>تحتاج متابعة</Text>
-          </View>
-          <View style={styles.barBackground}>
-            <View 
-              style={[
-                styles.barFill, 
-                { 
-                  width: `${(stats.needs_followup / stats.total) * 100}%`,
-                  backgroundColor: colors.warning,
-                }
-              ]} 
-            />
-          </View>
-          <Text style={styles.barCount}>{stats.needs_followup}</Text>
-        </View>
-
-        <View style={styles.barRow}>
-          <View style={styles.barLabelContainer}>
-            <Ionicons name="create" size={16} color={colors.textSecondary} />
-            <Text style={styles.barLabel}>ملاحظات</Text>
-          </View>
-          <View style={styles.barBackground}>
-            <View 
-              style={[
-                styles.barFill, 
-                { 
-                  width: `${(stats.notes / stats.total) * 100}%`,
-                  backgroundColor: colors.textSecondary,
-                }
-              ]} 
-            />
-          </View>
-          <Text style={styles.barCount}>{stats.notes}</Text>
-        </View>
-      </View>
-    );
+  // Get overall score percentage
+  const getOverallScore = () => {
+    let completed = 0;
+    let total = 0;
+    evaluations.forEach(e => {
+      if (e.answers) {
+        e.answers.forEach(a => {
+          total++;
+          if (a.answer_type === 'completed') completed++;
+        });
+      }
+    });
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
   };
 
   if (loading) {
     return (
       <View style={styles.container}>
-        <Header title="تقييمات الأداء" />
+        <Header title="التقييم" />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -188,70 +145,133 @@ export const ParentEvaluations: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="تقييمات الأداء" />
+      <Header showLogout />
       
       <ScrollView
         style={styles.content}
+        showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        <Text style={[styles.title, isRTL && styles.textRTL]}>
+          التقييم
+        </Text>
+
         {/* Student Info */}
         {selectedChild && (
-          <View style={styles.studentCard}>
-            <View style={styles.studentAvatar}>
-              <Ionicons name="person" size={32} color={colors.textLight} />
+          <View style={[styles.childInfo, isRTL && styles.childInfoRTL]}>
+            <View style={styles.childAvatar}>
+              <Ionicons name="person" size={28} color={colors.textLight} />
             </View>
-            <View style={styles.studentInfo}>
-              <Text style={[styles.studentName, isRTL && styles.textRTL]}>
+            <View style={styles.childDetails}>
+              <Text style={[styles.childName, isRTL && styles.textRTL]}>
                 {selectedChild.nameAr || selectedChild.name}
               </Text>
-              <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
+              <Text style={[styles.childGrade, isRTL && styles.textRTL]}>
                 {selectedChild.gradeAr || selectedChild.grade}
               </Text>
             </View>
           </View>
         )}
 
+        {/* Overall Score */}
+        <View style={styles.scoreCard}>
+          <Text style={styles.scoreLabel}>التقييم العام</Text>
+          <View style={styles.scoreCircle}>
+            <Ionicons name="trophy" size={24} color={colors.primary} />
+            <Text style={styles.scoreValue}>{getOverallScore()}%</Text>
+          </View>
+          <Text style={styles.scoreSubtext}>
+            من {evaluations.length} تقييمات
+          </Text>
+        </View>
+
+        {/* Evaluation Categories */}
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-          التقييمات ({evaluations.length})
+          معايير التقييم
         </Text>
 
-        {evaluations.map((evaluation) => (
-          <TouchableOpacity
-            key={evaluation.id}
-            style={styles.evaluationCard}
-            onPress={() => handleViewDetails(evaluation)}
-          >
-            <View style={styles.evalHeader}>
-              <View style={styles.evalIcon}>
-                <Ionicons name="clipboard-outline" size={24} color={colors.primary} />
-              </View>
-              <View style={styles.evalInfo}>
-                <Text style={[styles.evalName, isRTL && styles.textRTL]}>
-                  {evaluation.form_name_ar || evaluation.form_name}
-                </Text>
-                <Text style={[styles.evalTeacher, isRTL && styles.textRTL]}>
-                  المعلمة: {evaluation.teacher_name_ar || evaluation.teacher_name}
-                </Text>
-                <Text style={styles.evalDate}>
-                  {new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}
-                </Text>
+        {EVALUATION_CATEGORIES.map((category) => {
+          const status = getCategoryStatus(category.nameAr);
+          const statusInfo = status ? ANSWER_LABELS[status] : null;
+          
+          return (
+            <View key={category.id} style={styles.categoryCard}>
+              <View style={[styles.categoryRow, isRTL && styles.categoryRowRTL]}>
+                <View style={styles.categoryIcon}>
+                  <Ionicons 
+                    name={category.icon as any} 
+                    size={24} 
+                    color={colors.primary} 
+                  />
+                </View>
+                <View style={styles.categoryInfo}>
+                  <Text style={[styles.categoryName, isRTL && styles.textRTL]}>
+                    {category.nameAr}
+                  </Text>
+                  {statusInfo ? (
+                    <View style={[styles.statusBadge, { backgroundColor: statusInfo.color + '20' }]}>
+                      <Ionicons 
+                        name={statusInfo.icon as any} 
+                        size={14} 
+                        color={statusInfo.color} 
+                      />
+                      <Text style={[styles.statusText, { color: statusInfo.color }]}>
+                        {statusInfo.label}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.noEvalText}>لم يتم التقييم بعد</Text>
+                  )}
+                </View>
+                <View style={[
+                  styles.categoryIndicator,
+                  { backgroundColor: statusInfo?.color || colors.border }
+                ]} />
               </View>
             </View>
-            
-            {/* Bar Chart */}
-            <BarChart evaluation={evaluation} />
-            
-            <TouchableOpacity style={styles.detailsButton}>
-              <Text style={styles.detailsButtonText}>عرض التفاصيل</Text>
-              <Ionicons name="chevron-back" size={16} color={colors.primary} />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+          );
+        })}
+
+        {/* Recent Evaluations */}
+        {evaluations.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, isRTL && styles.textRTL, { marginTop: 24 }]}>
+              التقييمات الأخيرة
+            </Text>
+
+            {evaluations.slice(0, 3).map((evaluation) => (
+              <TouchableOpacity
+                key={evaluation.id}
+                style={styles.evaluationCard}
+                onPress={() => handleViewDetails(evaluation)}
+              >
+                <View style={styles.evalHeader}>
+                  <View style={styles.evalIcon}>
+                    <Ionicons name="clipboard-outline" size={20} color={colors.primary} />
+                  </View>
+                  <View style={styles.evalInfo}>
+                    <Text style={[styles.evalName, isRTL && styles.textRTL]}>
+                      {evaluation.form_name_ar || evaluation.form_name}
+                    </Text>
+                    <Text style={[styles.evalTeacher, isRTL && styles.textRTL]}>
+                      المعلمة: {evaluation.teacher_name_ar || evaluation.teacher_name}
+                    </Text>
+                  </View>
+                  <Text style={styles.evalDate}>
+                    {new Date(evaluation.evaluation_date).toLocaleDateString('ar-SA')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </>
+        )}
 
         {evaluations.length === 0 && (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="clipboard-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyText}>لا توجد تقييمات بعد</Text>
+          <View style={styles.noData}>
+            <Ionicons name="clipboard-outline" size={48} color={colors.border} />
+            <Text style={[styles.noDataText, isRTL && styles.textRTL]}>
+              لا توجد تقييمات بعد
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -280,9 +300,18 @@ export const ParentEvaluations: React.FC = () => {
             ) : (
               selectedEvaluation?.answers?.map((answer, index) => (
                 <View key={index} style={styles.answerCard}>
-                  <Text style={[styles.questionText, isRTL && styles.textRTL]}>
-                    {answer.question_ar || answer.question}
-                  </Text>
+                  <View style={styles.answerHeader}>
+                    <View style={styles.answerIconContainer}>
+                      <Ionicons 
+                        name={(CATEGORY_ICONS[answer.question_ar] || 'help-circle') as any}
+                        size={20} 
+                        color={colors.primary} 
+                      />
+                    </View>
+                    <Text style={[styles.questionText, isRTL && styles.textRTL]}>
+                      {answer.question_ar || answer.question}
+                    </Text>
+                  </View>
                   <View style={[styles.answerRow, isRTL && styles.answerRowRTL]}>
                     <View style={[
                       styles.answerBadge, 
@@ -332,62 +361,164 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  studentCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
-  },
-  studentAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  studentInfo: {
-    flex: 1,
-  },
-  studentName: {
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: colors.textLight,
-  },
-  studentGrade: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 4,
+    color: colors.text,
+    marginBottom: 16,
   },
   textRTL: {
     textAlign: 'right',
+  },
+  childInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  childInfoRTL: {
+    flexDirection: 'row-reverse',
+  },
+  childAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  childDetails: {
+    flex: 1,
+  },
+  childName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  childGrade: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  scoreCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  scoreLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  scoreCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: colors.primary,
+  },
+  scoreValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginTop: 4,
+  },
+  scoreSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  categoryCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoryRowRTL: {
+    flexDirection: 'row-reverse',
+  },
+  categoryIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  categoryInfo: {
+    flex: 1,
+  },
+  categoryName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noEvalText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  categoryIndicator: {
+    width: 4,
+    height: 40,
+    borderRadius: 2,
   },
   evaluationCard: {
     backgroundColor: colors.card,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    padding: 14,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
   evalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
   },
   evalIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     backgroundColor: colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -397,83 +528,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   evalName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text,
   },
   evalTeacher: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
   },
   evalDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.primary,
-    marginTop: 4,
+    fontWeight: '500',
   },
-  barChartContainer: {
-    marginBottom: 12,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  barRow: {
-    flexDirection: 'row',
+  noData: {
     alignItems: 'center',
-    marginBottom: 8,
+    paddingVertical: 40,
+    gap: 12,
   },
-  barLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 100,
-    gap: 4,
-  },
-  barLabel: {
-    fontSize: 12,
-    color: colors.text,
-  },
-  barBackground: {
-    flex: 1,
-    height: 20,
-    backgroundColor: colors.backgroundSecondary,
-    borderRadius: 10,
-    marginHorizontal: 8,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: 10,
-  },
-  barCount: {
-    width: 24,
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.text,
-    textAlign: 'center',
-  },
-  detailsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    gap: 4,
-  },
-  detailsButtonText: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    marginTop: 48,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: colors.textSecondary,
-    marginTop: 16,
+  noDataText: {
     fontSize: 16,
+    color: colors.textSecondary,
   },
   fullModal: {
     flex: 1,
@@ -513,11 +589,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  answerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  answerIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   questionText: {
+    flex: 1,
     fontSize: 16,
     color: colors.text,
     fontWeight: '500',
-    marginBottom: 12,
   },
   answerRow: {
     flexDirection: 'row',

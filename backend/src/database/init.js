@@ -50,6 +50,7 @@ async function initializeDatabase() {
       name_ar TEXT NOT NULL,
       grade TEXT NOT NULL,
       grade_ar TEXT NOT NULL,
+      class_name TEXT DEFAULT 'البراعم',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
     )
@@ -257,19 +258,19 @@ function insertSampleData() {
   db.run(`INSERT INTO parents (id, mobile, password, name, name_ar) VALUES (?, ?, ?, ?, ?)`,
     [parent2Id, '0507654321', hashedPassword, 'Khalid Ali', 'خالد علي']);
 
-  // Sample Students
+  // Sample Students - with class_name (البراعم, التكليف, الياسمين, الرياحين)
   const student1Id = uuidv4();
   const student2Id = uuidv4();
   const student3Id = uuidv4();
 
-  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar) VALUES (?, ?, ?, ?, ?, ?)`,
-    [student1Id, parent1Id, 'Fatima Ahmed', 'فاطمة أحمد', 'Grade 5', 'الصف الخامس']);
+  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [student1Id, parent1Id, 'Fatima Ahmed', 'فاطمة أحمد', 'البراعم', 'البراعم', 'البراعم']);
   
-  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar) VALUES (?, ?, ?, ?, ?, ?)`,
-    [student2Id, parent1Id, 'Maryam Ahmed', 'مريم أحمد', 'Grade 3', 'الصف الثالث']);
+  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [student2Id, parent1Id, 'Maryam Ahmed', 'مريم أحمد', 'التكليف', 'التكليف', 'التكليف']);
   
-  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar) VALUES (?, ?, ?, ?, ?, ?)`,
-    [student3Id, parent2Id, 'Nora Khalid', 'نورة خالد', 'Grade 4', 'الصف الرابع']);
+  db.run(`INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [student3Id, parent2Id, 'Nora Khalid', 'نورة خالد', 'الياسمين', 'الياسمين', 'الياسمين']);
 
   // Sample Teacher
   const teacher1Id = uuidv4();

@@ -11,7 +11,6 @@ export { TeacherEvaluations } from './teacher/TeacherEvaluations';
 // Parent Screens
 export { SelectChildScreen } from './parent/SelectChildScreen';
 export { ParentDashboard } from './parent/ParentDashboard';
-export { ParentGrades } from './parent/ParentGrades';
 export { ParentAnnouncements } from './parent/ParentAnnouncements';
 export { ParentEvents } from './parent/ParentEvents';
 export { ParentEvaluations } from './parent/ParentEvaluations';

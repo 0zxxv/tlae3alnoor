@@ -27,6 +27,7 @@ export const LoginScreen: React.FC = () => {
     { role: 'teacher', icon: 'school', label: t('teacher') },
     { role: 'parent', icon: 'people', label: t('parent') },
     { role: 'admin', icon: 'shield-checkmark', label: t('admin') },
+    { role: 'guest', icon: 'person-outline', label: 'زائر' },
   ];
 
   const handleLogin = async (role: UserRole) => {

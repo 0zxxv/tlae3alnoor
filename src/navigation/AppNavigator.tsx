@@ -5,6 +5,7 @@ import { LoginScreen } from '../screens';
 import { TeacherNavigator } from './TeacherNavigator';
 import { ParentNavigator } from './ParentNavigator';
 import { AdminNavigator } from './AdminNavigator';
+import { GuestNavigator } from './GuestNavigator';
 
 export const AppNavigator: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
@@ -25,6 +26,8 @@ export const AppNavigator: React.FC = () => {
         return <ParentNavigator />;
       case 'admin':
         return <AdminNavigator />;
+      case 'guest':
+        return <GuestNavigator />;
       default:
         return <LoginScreen />;
     }
