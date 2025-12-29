@@ -16,7 +16,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header } from '../../components';
 import { parentsApi, studentsApi } from '../../services/api';
-import { ACADEMY_CLASSES } from '../../constants/classes';
+import { ACADEMY_COURSES } from '../../constants/classes';
 
 interface Parent {
   id: string;
@@ -45,6 +45,7 @@ export const AdminParents: React.FC = () => {
   const [studentModalVisible, setStudentModalVisible] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [parentChildren, setParentChildren] = useState<Student[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Form states - no password required
   const [mobile, setMobile] = useState('');
@@ -54,7 +55,22 @@ export const AdminParents: React.FC = () => {
 
   // Student form
   const [studentNameAr, setStudentNameAr] = useState('');
-  const [studentClass, setStudentClass] = useState('');
+  const [studentCourse, setStudentCourse] = useState('');
+  const [studentSubclass, setStudentSubclass] = useState('');
+
+  // Get subclasses for selected course
+  const selectedCourseObj = ACADEMY_COURSES.find(c => c.id === studentCourse);
+
+  // Filter parents based on search
+  const filteredParents = parents.filter(parent => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      parent.name_ar?.toLowerCase().includes(query) ||
+      parent.name?.toLowerCase().includes(query) ||
+      parent.mobile?.includes(query)
+    );
+  });
 
   const fetchParents = useCallback(async () => {
     try {
@@ -160,25 +176,32 @@ export const AdminParents: React.FC = () => {
   };
 
   const handleAddStudent = async () => {
-    if (!studentNameAr || !studentClass || !selectedParent) {
+    if (!studentNameAr || !studentCourse || !studentSubclass || !selectedParent) {
       Alert.alert('خطأ', 'جميع الحقول مطلوبة');
       return;
     }
+
+    const course = ACADEMY_COURSES.find(c => c.id === studentCourse);
+    const courseName = course?.nameAr || '';
+    const fullClassName = `${courseName} - ${studentSubclass}`;
 
     try {
       await studentsApi.create({
         parent_id: selectedParent.id,
         name: studentNameAr,
         name_ar: studentNameAr,
-        grade: studentClass,
-        grade_ar: studentClass,
-        class_name: studentClass,
+        grade: courseName,
+        grade_ar: courseName,
+        class_name: courseName,
+        subclass_name: studentSubclass,
       });
       setStudentNameAr('');
-      setStudentClass('');
+      setStudentCourse('');
+      setStudentSubclass('');
       const children = await studentsApi.getByParent(selectedParent.id);
       setParentChildren(children);
       fetchParents();
+      Alert.alert('نجاح', 'تمت إضافة الطالبة بنجاح');
     } catch (error: any) {
       Alert.alert('خطأ', error.message);
     }
@@ -238,7 +261,28 @@ export const AdminParents: React.FC = () => {
           <Text style={styles.addButtonText}>إضافة حساب جديد</Text>
         </TouchableOpacity>
 
-        {parents.map((parent) => (
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="البحث بالاسم أو رقم الجوال..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={colors.textSecondary}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <Text style={styles.resultsCount}>
+          {filteredParents.length} من {parents.length} حساب
+        </Text>
+
+        {filteredParents.map((parent) => (
           <View key={parent.id} style={styles.parentCard}>
             <View style={[styles.parentInfo, isRTL && styles.rowReverse]}>
               <View style={styles.avatar}>
@@ -286,7 +330,10 @@ export const AdminParents: React.FC = () => {
           </View>
         ))}
 
-        {parents.length === 0 && (
+        {filteredParents.length === 0 && searchQuery && (
+          <Text style={styles.emptyText}>لا توجد نتائج للبحث</Text>
+        )}
+        {parents.length === 0 && !searchQuery && (
           <Text style={styles.emptyText}>لا يوجد حسابات</Text>
         )}
       </ScrollView>
@@ -395,28 +442,58 @@ export const AdminParents: React.FC = () => {
                 placeholderTextColor={colors.textSecondary}
               />
               
-              <Text style={styles.classLabel}>اختر الصف:</Text>
+              <Text style={styles.classLabel}>اختر الدورة:</Text>
               <View style={styles.classSelector}>
-                {ACADEMY_CLASSES.map((cls) => (
+                {ACADEMY_COURSES.map((course) => (
                   <TouchableOpacity
-                    key={cls.id}
+                    key={course.id}
                     style={[
                       styles.classOption,
-                      studentClass === cls.nameAr && styles.classOptionSelected,
+                      studentCourse === course.id && styles.classOptionSelected,
                     ]}
-                    onPress={() => setStudentClass(cls.nameAr)}
+                    onPress={() => {
+                      setStudentCourse(course.id);
+                      setStudentSubclass('');
+                    }}
                   >
                     <Text
                       style={[
                         styles.classOptionText,
-                        studentClass === cls.nameAr && styles.classOptionTextSelected,
+                        studentCourse === course.id && styles.classOptionTextSelected,
                       ]}
                     >
-                      {cls.nameAr}
+                      {course.nameAr}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {selectedCourseObj && (
+                <>
+                  <Text style={styles.classLabel}>اختر الصف:</Text>
+                  <View style={styles.classSelector}>
+                    {selectedCourseObj.subclasses.map((subclass) => (
+                      <TouchableOpacity
+                        key={subclass.id}
+                        style={[
+                          styles.classOption,
+                          studentSubclass === subclass.nameAr && styles.classOptionSelected,
+                        ]}
+                        onPress={() => setStudentSubclass(subclass.nameAr)}
+                      >
+                        <Text
+                          style={[
+                            styles.classOptionText,
+                            studentSubclass === subclass.nameAr && styles.classOptionTextSelected,
+                          ]}
+                        >
+                          {subclass.nameAr}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </>
+              )}
               
               <TouchableOpacity style={styles.addStudentButton} onPress={handleAddStudent}>
                 <Text style={styles.addStudentButtonText}>إضافة الطالبة</Text>
@@ -526,6 +603,30 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 32,
     fontSize: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'right',
+  },
+  resultsCount: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginBottom: 12,
   },
   modalOverlay: {
     flex: 1,

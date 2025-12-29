@@ -55,7 +55,7 @@ router.get('/parent/:parentId', (req, res) => {
 
 // Create student
 router.post('/', (req, res) => {
-  const { parent_id, name, name_ar, grade, grade_ar, class_name } = req.body;
+  const { parent_id, name, name_ar, grade, grade_ar, class_name, subclass_name } = req.body;
   
   if (!parent_id || !name || !name_ar || !grade || !grade_ar) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -70,9 +70,9 @@ router.post('/', (req, res) => {
 
     const id = uuidv4();
     prepare(`
-      INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, parent_id, name, name_ar, grade, grade_ar, class_name || grade_ar);
+      INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name, subclass_name) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, parent_id, name, name_ar, grade, grade_ar, class_name || grade_ar, subclass_name || '');
 
     const newStudent = prepare('SELECT * FROM students WHERE id = ?').get(id);
     res.status(201).json(newStudent);
@@ -84,7 +84,7 @@ router.post('/', (req, res) => {
 
 // Update student
 router.put('/:id', (req, res) => {
-  const { name, name_ar, grade, grade_ar, parent_id, class_name } = req.body;
+  const { name, name_ar, grade, grade_ar, parent_id, class_name, subclass_name } = req.body;
   
   try {
     const existing = prepare('SELECT * FROM students WHERE id = ?').get(req.params.id);
@@ -94,7 +94,7 @@ router.put('/:id', (req, res) => {
 
     prepare(`
       UPDATE students 
-      SET name = ?, name_ar = ?, grade = ?, grade_ar = ?, parent_id = ?, class_name = ?
+      SET name = ?, name_ar = ?, grade = ?, grade_ar = ?, parent_id = ?, class_name = ?, subclass_name = ?
       WHERE id = ?
     `).run(
       name || existing.name,
@@ -103,6 +103,7 @@ router.put('/:id', (req, res) => {
       grade_ar || existing.grade_ar,
       parent_id || existing.parent_id,
       class_name || existing.class_name,
+      subclass_name !== undefined ? subclass_name : existing.subclass_name,
       req.params.id
     );
 

@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
 import { colors } from '../theme/colors';
-import { Header } from '../components';
+import { Header, Slideshow } from '../components';
 import { ParentEvents, ParentAnnouncements } from '../screens';
+import { slideshowApi } from '../services/api';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -14,85 +15,106 @@ const Stack = createNativeStackNavigator();
 // Guest Home Screen - shows welcome and general info
 const GuestHomeScreen: React.FC = () => {
   const { isRTL } = useLanguage();
+  const [slides, setSlides] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
+  const fetchSlides = async () => {
+    try {
+      const data = await slideshowApi.getAll();
+      const formattedSlides = data.map((slide: any) => ({
+        id: slide.id,
+        uri: slide.image_url,
+        title: slide.title,
+        titleAr: slide.title_ar,
+      }));
+      setSlides(formattedSlides);
+    } catch (error) {
+      console.error('Error fetching slides:', error);
+    }
+  };
+
+  const openWhatsApp = () => {
+    Linking.openURL('https://wa.me/97336555634');
+  };
+
+  const openInstagram = () => {
+    Linking.openURL('https://www.instagram.com/tlae3.alnoor?igsh=MXNxejNncWlwMjhndw==');
+  };
 
   return (
     <View style={styles.container}>
       <Header title="أهلاً بك" showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.welcomeCard}>
-          <Ionicons name="school" size={64} color={colors.primary} />
-          <Text style={[styles.welcomeTitle, isRTL && styles.textRTL]}>
-            مرحباً بك في طلائع النور
+        {/* Header Bar - Logo, Name, Social Icons */}
+        <View style={styles.headerBar}>
+          <View style={styles.socialIconsLeft}>
+            <TouchableOpacity style={styles.socialButtonSmall} onPress={openWhatsApp}>
+              <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButtonSmall} onPress={openInstagram}>
+              <Ionicons name="logo-instagram" size={22} color="#E4405F" />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.titleContainer}>
+            <Text style={styles.headerTitle}>طلائع النور</Text>
+            <Text style={styles.headerSubtitle}>مركز تعليمي ديني للفتيات</Text>
+          </View>
+          
+          <Image 
+            source={require('../../assets/icon.png')} 
+            style={styles.logoSmall}
+          />
+        </View>
+
+        {/* Slideshow */}
+        {slides.length > 0 && <Slideshow images={slides} />}
+
+        {/* About Section */}
+        <View style={styles.infoCard}>
+          <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
+            من نحن؟
           </Text>
-          <Text style={[styles.welcomeText, isRTL && styles.textRTL]}>
-            أكاديمية تعليمية متميزة للبنات
+          <Text style={[styles.aboutText, isRTL && styles.textRTL]}>
+            مركز تعليم ديني للفتيات في منطقة اسكان عالي - البحرين
+          </Text>
+          <Text style={[styles.aboutSubText, isRTL && styles.textRTL]}>
+            تحت مظلة مجلس طلبة العلوم الدينية
           </Text>
         </View>
 
+        {/* Programs Section */}
         <View style={styles.infoCard}>
           <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-            صفوف الأكاديمية
+            دورات المركز
           </Text>
           
           <View style={styles.classItem}>
             <Ionicons name="flower" size={24} color={colors.primary} />
-            <Text style={styles.className}>البراعم</Text>
+            <Text style={styles.className}>برنامج البراعم</Text>
           </View>
           
           <View style={styles.classItem}>
             <Ionicons name="star" size={24} color={colors.primary} />
-            <Text style={styles.className}>التكليف</Text>
+            <Text style={styles.className}>برنامج التكليف</Text>
           </View>
           
           <View style={styles.classItem}>
             <Ionicons name="rose" size={24} color={colors.primary} />
-            <Text style={styles.className}>الياسمين</Text>
+            <Text style={styles.className}>برنامج الياسمين</Text>
           </View>
           
           <View style={styles.classItem}>
             <Ionicons name="leaf" size={24} color={colors.primary} />
-            <Text style={styles.className}>الرياحين</Text>
+            <Text style={styles.className}>برنامج الرياحين</Text>
           </View>
         </View>
-
-        <View style={styles.infoCard}>
-          <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
-            معايير التقييم
-          </Text>
-          
-          <View style={styles.evalItem}>
-            <Ionicons name="water" size={20} color={colors.primary} />
-            <Text style={styles.evalName}>الوضوء</Text>
-          </View>
-          
-          <View style={styles.evalItem}>
-            <Ionicons name="moon" size={20} color={colors.primary} />
-            <Text style={styles.evalName}>الصلاة</Text>
-          </View>
-          
-          <View style={styles.evalItem}>
-            <Ionicons name="heart" size={20} color={colors.primary} />
-            <Text style={styles.evalName}>السلوك</Text>
-          </View>
-          
-          <View style={styles.evalItem}>
-            <Ionicons name="hand-left" size={20} color={colors.primary} />
-            <Text style={styles.evalName}>المشاركة</Text>
-          </View>
-          
-          <View style={styles.evalItem}>
-            <Ionicons name="shirt" size={20} color={colors.primary} />
-            <Text style={styles.evalName}>الحجاب</Text>
-          </View>
-        </View>
-
-        <View style={styles.contactCard}>
-          <Ionicons name="call" size={24} color={colors.primary} />
-          <Text style={[styles.contactText, isRTL && styles.textRTL]}>
-            للتواصل والتسجيل يرجى الاتصال بإدارة الأكاديمية
-          </Text>
-        </View>
+        
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
@@ -172,29 +194,53 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
   },
-  welcomeCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 32,
+  headerBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
+    justifyContent: 'space-between',
+    backgroundColor: colors.card,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  welcomeTitle: {
-    fontSize: 24,
+  logoSmall: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.text,
-    marginTop: 16,
-    marginBottom: 8,
     textAlign: 'center',
   },
-  welcomeText: {
-    fontSize: 16,
+  headerSubtitle: {
+    fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
+    marginTop: 2,
+  },
+  socialIconsLeft: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  socialButtonSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.backgroundSecondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   textRTL: {
     textAlign: 'right',
@@ -203,7 +249,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -214,43 +261,36 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'right',
   },
+  aboutText: {
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'right',
+    lineHeight: 26,
+    marginBottom: 12,
+  },
+  aboutSubText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    lineHeight: 22,
+  },
   classItem: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    justifyContent: 'flex-start',
   },
   className: {
     fontSize: 16,
     color: colors.text,
     fontWeight: '600',
-  },
-  evalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 10,
-  },
-  evalName: {
-    fontSize: 15,
-    color: colors.text,
-  },
-  contactCard: {
-    backgroundColor: colors.secondary,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 32,
-  },
-  contactText: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.text,
     textAlign: 'right',
+  },
+  bottomSpacer: {
+    height: 24,
   },
 });
 

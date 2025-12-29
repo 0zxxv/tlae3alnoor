@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Alert,
   ActivityIndicator,
   RefreshControl,
@@ -14,7 +15,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card } from '../../components';
 import { studentsApi } from '../../services/api';
-import { ACADEMY_CLASSES } from '../../constants/classes';
+import { ACADEMY_COURSES } from '../../constants/classes';
 
 interface Student {
   id: string;
@@ -23,6 +24,7 @@ interface Student {
   grade: string;
   grade_ar: string;
   class_name?: string;
+  subclass_name?: string;
   parent_name?: string;
   parent_name_ar?: string;
 }
@@ -32,11 +34,14 @@ export const AdminStudents: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedSubclass, setSelectedSubclass] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchStudents = useCallback(async () => {
     try {
       const data = await studentsApi.getAll();
+      console.log('Fetched students:', JSON.stringify(data, null, 2));
       setStudents(data);
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -78,14 +83,98 @@ export const AdminStudents: React.FC = () => {
     );
   };
 
-  // Filter students by selected class
-  const filteredStudents = selectedClass
-    ? students.filter((s) => s.class_name === selectedClass || s.grade_ar === selectedClass)
-    : students;
+  // Get current course object
+  const currentCourse = ACADEMY_COURSES.find(c => c.id === selectedCourse);
 
-  // Get student count by class
-  const getClassCount = (className: string) => {
-    return students.filter((s) => s.class_name === className || s.grade_ar === className).length;
+  // Helper function to check if student belongs to a course
+  const studentMatchesCourse = (student: Student, courseId: string): boolean => {
+    const course = ACADEMY_COURSES.find(c => c.id === courseId);
+    if (!course) return false;
+    
+    // Extract keywords to match (e.g., "البراعم" from "دورة البراعم")
+    const keyword = course.nameAr.replace('دورة ', '');
+    
+    // Check multiple fields for the course name
+    const fieldsToCheck = [
+      student.class_name || '',
+      student.grade_ar || '',
+      student.grade || ''
+    ];
+    
+    // Check if any field contains the keyword or full course name
+    for (const field of fieldsToCheck) {
+      if (field && (field.includes(keyword) || field.includes(course.nameAr))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Helper function to check if student belongs to a subclass
+  const studentMatchesSubclass = (student: Student, subclassName: string): boolean => {
+    // Extract keyword (e.g., "المصطفى" from "صف المصطفى")
+    const keyword = subclassName.replace('صف ', '');
+    
+    // Check multiple fields for the subclass name
+    const fieldsToCheck = [
+      student.subclass_name || '',
+      student.grade_ar || '',
+      student.grade || ''
+    ];
+    
+    // Check if any field contains the keyword or full subclass name
+    for (const field of fieldsToCheck) {
+      if (field && (field.includes(keyword) || field.includes(subclassName))) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Filter students based on selected course, subclass, and search
+  const getFilteredStudents = () => {
+    let filtered = students;
+    
+    if (selectedCourse && selectedCourse !== 'all') {
+      filtered = filtered.filter(s => studentMatchesCourse(s, selectedCourse));
+    }
+
+    // Only filter by subclass if it's not 'all' and a subclass is selected
+    if (selectedSubclass && selectedSubclass !== 'all') {
+      filtered = filtered.filter(s => studentMatchesSubclass(s, selectedSubclass));
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(s =>
+        s.name_ar?.toLowerCase().includes(query) ||
+        s.name?.toLowerCase().includes(query) ||
+        s.parent_name_ar?.toLowerCase().includes(query) ||
+        s.parent_name?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  };
+
+  const filteredStudents = getFilteredStudents();
+
+  // Get student count for a course
+  const getCourseCount = (courseId: string) => {
+    return students.filter(s => studentMatchesCourse(s, courseId)).length;
+  };
+
+  // Get student count for a subclass within the selected course
+  const getSubclassCount = (subclassName: string) => {
+    let filtered = students;
+    
+    // First filter by current course
+    if (currentCourse) {
+      filtered = filtered.filter(s => studentMatchesCourse(s, currentCourse.id));
+    }
+    
+    // Then filter by subclass
+    return filtered.filter(s => studentMatchesSubclass(s, subclassName)).length;
   };
 
   if (loading) {
@@ -99,8 +188,8 @@ export const AdminStudents: React.FC = () => {
     );
   }
 
-  // Show class selection first if no class is selected
-  if (!selectedClass) {
+  // Level 1: Show courses (دورات)
+  if (!selectedCourse) {
     return (
       <View style={styles.container}>
         <Header title="الطالبات" />
@@ -114,7 +203,7 @@ export const AdminStudents: React.FC = () => {
             <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
               <Ionicons name="school" size={28} color={colors.primary} />
               <Text style={[styles.title, isRTL && styles.textRTL]}>
-                اختر الصف
+                اختر الدورة
               </Text>
             </View>
           </View>
@@ -123,20 +212,23 @@ export const AdminStudents: React.FC = () => {
             {students.length} طالبة مسجلة في الأكاديمية
           </Text>
 
-          {/* Classes Grid */}
+          {/* Courses Grid */}
           <View style={styles.classesGrid}>
-            {ACADEMY_CLASSES.map((cls) => (
+            {ACADEMY_COURSES.map((course) => (
               <TouchableOpacity
-                key={cls.id}
+                key={course.id}
                 style={styles.classCard}
-                onPress={() => setSelectedClass(cls.nameAr)}
+                onPress={() => setSelectedCourse(course.id)}
               >
                 <View style={styles.classIcon}>
-                  <Ionicons name={cls.icon as any} size={32} color={colors.primary} />
+                  <Ionicons name={course.icon as any} size={32} color={colors.primary} />
                 </View>
-                <Text style={styles.className}>{cls.nameAr}</Text>
+                <Text style={styles.className}>{course.nameAr}</Text>
                 <Text style={styles.classCount}>
-                  {getClassCount(cls.nameAr)} طالبة
+                  {getCourseCount(course.id)} طالبة
+                </Text>
+                <Text style={styles.subclassInfo}>
+                  {course.subclasses.length} صفوف
                 </Text>
               </TouchableOpacity>
             ))}
@@ -145,7 +237,7 @@ export const AdminStudents: React.FC = () => {
           {/* View All Button */}
           <TouchableOpacity
             style={styles.viewAllButton}
-            onPress={() => setSelectedClass('all')}
+            onPress={() => setSelectedCourse('all')}
           >
             <Ionicons name="list" size={20} color={colors.textLight} />
             <Text style={styles.viewAllText}>عرض جميع الطالبات</Text>
@@ -155,6 +247,73 @@ export const AdminStudents: React.FC = () => {
     );
   }
 
+  // Level 2: Show subclasses (صفوف) for selected course
+  if (selectedCourse !== 'all' && !selectedSubclass && currentCourse) {
+    return (
+      <View style={styles.container}>
+        <Header title="الطالبات" />
+        
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+          {/* Back to courses */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => setSelectedCourse(null)}
+          >
+            <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+            <Text style={styles.backText}>العودة للدورات</Text>
+          </TouchableOpacity>
+
+          <View style={styles.header}>
+            <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+              <Ionicons name={currentCourse.icon as any} size={28} color={colors.primary} />
+              <Text style={[styles.title, isRTL && styles.textRTL]}>
+                {currentCourse.nameAr}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
+            اختر الصف
+          </Text>
+
+          {/* Subclasses List */}
+          {currentCourse.subclasses.map((subclass) => (
+            <TouchableOpacity
+              key={subclass.id}
+              style={styles.subclassCard}
+              onPress={() => setSelectedSubclass(subclass.nameAr)}
+            >
+              <View style={styles.subclassIcon}>
+                <Ionicons name="people" size={24} color={colors.primary} />
+              </View>
+              <View style={styles.subclassInfo}>
+                <Text style={styles.subclassName}>{subclass.nameAr}</Text>
+                <Text style={styles.subclassCount}>
+                  {getSubclassCount(subclass.nameAr)} طالبة
+                </Text>
+              </View>
+              <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ))}
+
+          {/* View all in this course */}
+          <TouchableOpacity
+            style={[styles.viewAllButton, { marginTop: 16 }]}
+            onPress={() => setSelectedSubclass('all')}
+          >
+            <Ionicons name="list" size={20} color={colors.textLight} />
+            <Text style={styles.viewAllText}>عرض كل طالبات {currentCourse.nameAr}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // Level 3: Show students list
   return (
     <View style={styles.container}>
       <Header title="الطالبات" />
@@ -164,26 +323,55 @@ export const AdminStudents: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Back to classes */}
+        {/* Back button */}
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => setSelectedClass(null)}
+          onPress={() => {
+            if (selectedSubclass) {
+              setSelectedSubclass(null);
+            } else {
+              setSelectedCourse(null);
+            }
+          }}
         >
           <Ionicons name="arrow-forward" size={20} color={colors.primary} />
-          <Text style={styles.backText}>العودة للصفوف</Text>
+          <Text style={styles.backText}>
+            {selectedSubclass && selectedCourse !== 'all' ? 'العودة للصفوف' : 'العودة للدورات'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="school" size={28} color={colors.primary} />
             <Text style={[styles.title, isRTL && styles.textRTL]}>
-              {selectedClass === 'all' ? 'جميع الطالبات' : `صف ${selectedClass}`}
+              {selectedCourse === 'all' 
+                ? 'جميع الطالبات' 
+                : selectedSubclass === 'all'
+                  ? `كل طالبات ${currentCourse?.nameAr}`
+                  : selectedSubclass}
             </Text>
           </View>
         </View>
 
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="البحث بالاسم..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={colors.textSecondary}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
+
         <Text style={[styles.subtitle, isRTL && styles.textRTL]}>
-          {selectedClass === 'all' ? students.length : filteredStudents.length} طالبة
+          {filteredStudents.length} طالبة
         </Text>
 
         <Text style={[styles.infoText, isRTL && styles.textRTL]}>
@@ -191,7 +379,7 @@ export const AdminStudents: React.FC = () => {
         </Text>
 
         {/* Students List */}
-        {(selectedClass === 'all' ? students : filteredStudents).map((student) => (
+        {filteredStudents.map((student) => (
           <Card key={student.id}>
             <View style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
               <View style={styles.studentAvatar}>
@@ -204,7 +392,7 @@ export const AdminStudents: React.FC = () => {
                 <View style={[styles.gradeRow, isRTL && styles.gradeRowRTL]}>
                   <Ionicons name="school-outline" size={12} color={colors.textSecondary} />
                   <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                    {student.class_name || student.grade_ar || student.grade}
+                    {student.subclass_name || student.class_name || student.grade_ar || student.grade}
                   </Text>
                 </View>
                 {student.parent_name && (
@@ -226,10 +414,17 @@ export const AdminStudents: React.FC = () => {
           </Card>
         ))}
 
-        {(selectedClass === 'all' ? students : filteredStudents).length === 0 && (
+        {filteredStudents.length === 0 && searchQuery && (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="search-outline" size={64} color={colors.border} />
+            <Text style={styles.emptyText}>لا توجد نتائج للبحث</Text>
+          </View>
+        )}
+
+        {filteredStudents.length === 0 && !searchQuery && (
           <View style={styles.emptyContainer}>
             <Ionicons name="school-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyText}>لا توجد طالبات في هذا الصف</Text>
+            <Text style={styles.emptyText}>لا توجد طالبات</Text>
           </View>
         )}
       </ScrollView>
@@ -313,14 +508,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   className: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 4,
+    textAlign: 'center',
   },
   classCount: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  subclassInfo: {
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: 4,
   },
   viewAllButton: {
     flexDirection: 'row',
@@ -346,6 +547,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.primary,
     fontWeight: '600',
+  },
+  subclassCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  subclassIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  subclassName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  subclassCount: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'right',
   },
   studentItem: {
     flexDirection: 'row',
