@@ -57,6 +57,15 @@ async function initializeDatabase() {
     )
   `);
 
+  // Migration: Add missing columns to students table if they don't exist
+  try {
+    db.run(`ALTER TABLE students ADD COLUMN class_name TEXT DEFAULT 'دورة البراعم'`);
+  } catch (e) { /* Column already exists */ }
+  
+  try {
+    db.run(`ALTER TABLE students ADD COLUMN subclass_name TEXT DEFAULT 'صف المصطفى'`);
+  } catch (e) { /* Column already exists */ }
+
   // Teachers table
   db.run(`
     CREATE TABLE IF NOT EXISTS teachers (

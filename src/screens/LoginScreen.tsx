@@ -78,7 +78,7 @@ export const LoginScreen: React.FC = () => {
                     activeOpacity={0.8}
                   >
                     <View style={styles.roleIcon}>
-                      <Ionicons name={icon} size={32} color={colors.primary} />
+                      <Ionicons name={icon} size={26} color={colors.primary} />
                     </View>
                     <Text style={styles.roleText}>{label}</Text>
                   </TouchableOpacity>
@@ -148,13 +148,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   roleCard: {
-    width: (width - 80) / 3,
-    aspectRatio: 0.9,
+    width: Math.min((width - 80) / 4, 90),
+    aspectRatio: 0.85,
     backgroundColor: colors.card,
-    borderRadius: 20,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    padding: 10,
     borderWidth: 2,
     borderColor: colors.border,
     shadowColor: colors.shadow,
@@ -164,16 +164,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   roleIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
   roleText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.text,
     textAlign: 'center',

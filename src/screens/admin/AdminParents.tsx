@@ -57,6 +57,7 @@ export const AdminParents: React.FC = () => {
   const [studentNameAr, setStudentNameAr] = useState('');
   const [studentCourse, setStudentCourse] = useState('');
   const [studentSubclass, setStudentSubclass] = useState('');
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
   // Get subclasses for selected course
   const selectedCourseObj = ACADEMY_COURSES.find(c => c.id === studentCourse);
@@ -183,28 +184,57 @@ export const AdminParents: React.FC = () => {
 
     const course = ACADEMY_COURSES.find(c => c.id === studentCourse);
     const courseName = course?.nameAr || '';
-    const fullClassName = `${courseName} - ${studentSubclass}`;
+
+    const studentData = {
+      parent_id: selectedParent.id,
+      name: studentNameAr,
+      name_ar: studentNameAr,
+      grade: courseName,
+      grade_ar: courseName,
+      class_name: courseName,
+      subclass_name: studentSubclass,
+    };
+    
+    console.log('Adding student with data:', JSON.stringify(studentData, null, 2));
 
     try {
-      await studentsApi.create({
-        parent_id: selectedParent.id,
-        name: studentNameAr,
-        name_ar: studentNameAr,
-        grade: courseName,
-        grade_ar: courseName,
-        class_name: courseName,
-        subclass_name: studentSubclass,
-      });
-      setStudentNameAr('');
-      setStudentCourse('');
-      setStudentSubclass('');
+      if (editingStudent) {
+        // Update existing student
+        await studentsApi.update(editingStudent.id, studentData);
+        Alert.alert('نجاح', 'تم تحديث بيانات الطالبة بنجاح');
+      } else {
+        // Create new student
+        await studentsApi.create(studentData);
+        Alert.alert('نجاح', 'تمت إضافة الطالبة بنجاح');
+      }
+      resetStudentForm();
       const children = await studentsApi.getByParent(selectedParent.id);
       setParentChildren(children);
       fetchParents();
-      Alert.alert('نجاح', 'تمت إضافة الطالبة بنجاح');
     } catch (error: any) {
-      Alert.alert('خطأ', error.message);
+      console.error('Student error:', error);
+      Alert.alert('خطأ', error.message || 'حدث خطأ في الخادم');
     }
+  };
+
+  const resetStudentForm = () => {
+    setStudentNameAr('');
+    setStudentCourse('');
+    setStudentSubclass('');
+    setEditingStudent(null);
+  };
+
+  const handleEditStudent = (student: Student) => {
+    setStudentNameAr(student.name_ar || student.name);
+    // Find the course based on grade_ar or class_name
+    const matchedCourse = ACADEMY_COURSES.find(c => 
+      c.nameAr === student.grade_ar || c.nameAr === (student as any).class_name
+    );
+    if (matchedCourse) {
+      setStudentCourse(matchedCourse.id);
+      setStudentSubclass((student as any).subclass_name || '');
+    }
+    setEditingStudent(student);
   };
 
   const handleDeleteStudent = (student: Student) => {
@@ -402,7 +432,10 @@ export const AdminParents: React.FC = () => {
               <Text style={styles.modalTitle}>
                 طالبات {selectedParent?.name_ar || selectedParent?.name}
               </Text>
-              <TouchableOpacity onPress={() => setStudentModalVisible(false)}>
+              <TouchableOpacity onPress={() => {
+                setStudentModalVisible(false);
+                resetStudentForm();
+              }}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
@@ -410,20 +443,30 @@ export const AdminParents: React.FC = () => {
             <ScrollView style={styles.studentsList}>
               {parentChildren.map((student) => (
                 <View key={student.id} style={styles.studentItem}>
-                  <View style={styles.studentInfo}>
-                    <Ionicons name="person-circle" size={32} color={colors.primary} />
-                    <View style={styles.studentDetails}>
-                      <Text style={styles.studentName}>
-                        {student.name_ar || student.name}
-                      </Text>
-                      <Text style={styles.studentGrade}>
-                        {student.grade_ar || student.grade}
-                      </Text>
-                    </View>
+                  <Ionicons name="person-circle" size={32} color={colors.primary} />
+                  <View style={styles.studentDetails}>
+                    <Text style={styles.studentName}>
+                      {student.name_ar || student.name}
+                    </Text>
+                    <Text style={styles.studentGrade}>
+                      {(student as any).class_name || student.grade_ar || student.grade}
+                      {(student as any).subclass_name ? ` - ${(student as any).subclass_name}` : ''}
+                    </Text>
                   </View>
-                  <TouchableOpacity onPress={() => handleDeleteStudent(student)}>
-                    <Ionicons name="trash" size={20} color={colors.error} />
-                  </TouchableOpacity>
+                  <View style={styles.studentActions}>
+                    <TouchableOpacity 
+                      style={styles.studentActionBtn}
+                      onPress={() => handleEditStudent(student)}
+                    >
+                      <Ionicons name="pencil" size={18} color={colors.warning} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={styles.studentActionBtn}
+                      onPress={() => handleDeleteStudent(student)}
+                    >
+                      <Ionicons name="trash" size={18} color={colors.error} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
 
@@ -433,7 +476,16 @@ export const AdminParents: React.FC = () => {
             </ScrollView>
 
             <View style={styles.addStudentSection}>
-              <Text style={styles.sectionTitle}>إضافة طالبة جديدة</Text>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {editingStudent ? 'تعديل بيانات الطالبة' : 'إضافة طالبة جديدة'}
+                </Text>
+                {editingStudent && (
+                  <TouchableOpacity onPress={resetStudentForm}>
+                    <Text style={styles.cancelEditText}>إلغاء التعديل</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <TextInput
                 style={[styles.input, styles.inputRTL]}
                 placeholder="اسم الطالبة"
@@ -496,7 +548,9 @@ export const AdminParents: React.FC = () => {
               )}
               
               <TouchableOpacity style={styles.addStudentButton} onPress={handleAddStudent}>
-                <Text style={styles.addStudentButtonText}>إضافة الطالبة</Text>
+                <Text style={styles.addStudentButtonText}>
+                  {editingStudent ? 'حفظ التعديلات' : 'إضافة الطالبة'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -708,16 +762,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   studentItem: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-  },
-  studentInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 12,
   },
   studentDetails: {
@@ -734,6 +783,15 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'right',
   },
+  studentActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  studentActionBtn: {
+    padding: 6,
+    borderRadius: 6,
+    backgroundColor: colors.backgroundSecondary,
+  },
   noStudentsText: {
     textAlign: 'center',
     color: colors.textSecondary,
@@ -744,12 +802,22 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 12,
     textAlign: 'right',
+  },
+  cancelEditText: {
+    fontSize: 14,
+    color: colors.error,
+    fontWeight: '500',
   },
   addStudentButton: {
     backgroundColor: colors.primary,

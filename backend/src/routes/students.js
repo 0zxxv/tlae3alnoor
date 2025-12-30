@@ -55,9 +55,12 @@ router.get('/parent/:parentId', (req, res) => {
 
 // Create student
 router.post('/', (req, res) => {
+  console.log('📝 Create student request body:', JSON.stringify(req.body, null, 2));
+  
   const { parent_id, name, name_ar, grade, grade_ar, class_name, subclass_name } = req.body;
   
   if (!parent_id || !name || !name_ar || !grade || !grade_ar) {
+    console.log('❌ Missing required fields:', { parent_id: !!parent_id, name: !!name, name_ar: !!name_ar, grade: !!grade, grade_ar: !!grade_ar });
     return res.status(400).json({ error: 'All fields are required' });
   }
 
@@ -65,20 +68,25 @@ router.post('/', (req, res) => {
     // Check if parent exists
     const parent = prepare('SELECT id FROM parents WHERE id = ?').get(parent_id);
     if (!parent) {
+      console.log('❌ Parent not found:', parent_id);
       return res.status(404).json({ error: 'Parent not found' });
     }
 
     const id = uuidv4();
+    console.log('✅ Creating student with ID:', id);
+    
     prepare(`
       INSERT INTO students (id, parent_id, name, name_ar, grade, grade_ar, class_name, subclass_name) 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(id, parent_id, name, name_ar, grade, grade_ar, class_name || grade_ar, subclass_name || '');
 
     const newStudent = prepare('SELECT * FROM students WHERE id = ?').get(id);
+    console.log('✅ Student created:', newStudent);
     res.status(201).json(newStudent);
   } catch (error) {
-    console.error('Create student error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('❌ Create student error:', error.message);
+    console.error('Stack:', error.stack);
+    res.status(500).json({ error: 'Server error: ' + error.message });
   }
 });
 
