@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Image,
-  Text,
   StyleSheet,
   Dimensions,
   ScrollView,
@@ -69,11 +68,6 @@ export const Slideshow: React.FC<SlideshowProps> = ({
         {images.map((image, index) => (
           <View key={image.id} style={styles.slide}>
             <Image source={{ uri: image.uri }} style={styles.image} />
-            <View style={styles.overlay}>
-              <Text style={styles.slideTitle}>
-                {image.titleAr || image.title}
-              </Text>
-            </View>
           </View>
         ))}
       </ScrollView>
@@ -112,21 +106,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
-  },
-  overlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(165, 75, 156, 0.95)',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  slideTitle: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
   },
   pagination: {
     flexDirection: 'row',

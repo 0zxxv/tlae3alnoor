@@ -13,6 +13,7 @@ import {
   AdminParents,
   AdminTeachers,
   AdminEvaluationForms,
+  AdminChat,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -27,6 +28,7 @@ const AdminStack = () => (
     <Stack.Screen name="AdminParents" component={AdminParents} />
     <Stack.Screen name="AdminTeachers" component={AdminTeachers} />
     <Stack.Screen name="AdminEvaluationForms" component={AdminEvaluationForms} />
+    <Stack.Screen name="AdminChat" component={AdminChat} />
   </Stack.Navigator>
 );
 
@@ -91,10 +93,24 @@ export const AdminNavigator: React.FC = () => {
         options={{
           tabBarLabel: t('slideshow'),
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons 
-              name={focused ? 'images' : 'images-outline'} 
-              size={24} 
-              color={color} 
+            <Ionicons
+              name={focused ? 'images' : 'images-outline'}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={AdminChat}
+        options={{
+          tabBarLabel: t('chat'),
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+              size={24}
+              color={color}
             />
           ),
         }}

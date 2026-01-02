@@ -12,6 +12,7 @@ import {
   ParentEvaluations,
   ParentAnnouncements,
   ParentEvents,
+  ParentChat,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -23,6 +24,7 @@ const ParentStack = () => (
     <Stack.Screen name="ParentEvaluations" component={ParentEvaluations} />
     <Stack.Screen name="ParentAnnouncements" component={ParentAnnouncements} />
     <Stack.Screen name="ParentEvents" component={ParentEvents} />
+    <Stack.Screen name="ParentChat" component={ParentChat} />
   </Stack.Navigator>
 );
 
@@ -87,10 +89,24 @@ const ParentTabs: React.FC = () => {
         options={{
           tabBarLabel: t('events'),
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons 
-              name={focused ? 'calendar' : 'calendar-outline'} 
-              size={24} 
-              color={color} 
+            <Ionicons
+              name={focused ? 'calendar' : 'calendar-outline'}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={ParentChat}
+        options={{
+          tabBarLabel: t('chat'),
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
+              size={24}
+              color={color}
             />
           ),
         }}

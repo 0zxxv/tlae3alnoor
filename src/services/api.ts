@@ -2,7 +2,8 @@
 // For Android emulator: use 10.0.2.2
 // For iOS simulator: use localhost
 // For physical device: use your computer's IP address
-const API_BASE_URL = 'http://192.168.100.12:3001/api';
+const API_BASE_URL = 'http://172.20.10.11:3001/api';
+export const SERVER_BASE_URL = 'http://172.20.10.11:3001';
 
 // Helper function for API calls
 async function apiCall<T>(
@@ -125,6 +126,24 @@ export const evaluationsApi = {
   getById: (id: string) => apiCall<any>(`/evaluations/${id}`),
   create: (data: any) => apiCall<any>('/evaluations', 'POST', data),
   delete: (id: string) => apiCall<any>(`/evaluations/${id}`, 'DELETE'),
+};
+
+// Upload image to server
+export const uploadImage = async (base64Image: string): Promise<string> => {
+  const response = await fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ image: base64Image }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to upload image');
+  }
+
+  const data = await response.json();
+  return `${SERVER_BASE_URL}${data.url}`;
 };
 
 // Export configuration setter

@@ -10,15 +10,15 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
-  TextInput,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Slideshow, Card } from '../../components';
-import { slideshowApi } from '../../services/api';
+import { slideshowApi, uploadImage } from '../../services/api';
 import { SlideShowImage } from '../../types';
+import * as FileSystem from 'expo-file-system';
 
 export const AdminSlideshow: React.FC = () => {
   const { t, isRTL } = useLanguage();
@@ -26,8 +26,8 @@ export const AdminSlideshow: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [titleAr, setTitleAr] = useState('');
   const [imageUri, setImageUri] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   const fetchSlides = useCallback(async () => {
     try {
@@ -77,26 +77,43 @@ export const AdminSlideshow: React.FC = () => {
   };
 
   const handleAddSlide = async () => {
-    if (!titleAr || !imageUri) {
-      Alert.alert('خطأ', 'يرجى إضافة عنوان وصورة');
+    if (!imageUri) {
+      Alert.alert('خطأ', 'يرجى اختيار صورة');
       return;
     }
 
+    setUploading(true);
     try {
+      // Convert image to base64
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      // Get file extension
+      const extension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+      const base64WithPrefix = `data:${mimeType};base64,${base64}`;
+      
+      // Upload to server
+      const serverUrl = await uploadImage(base64WithPrefix);
+      
+      // Create slideshow entry with server URL
       await slideshowApi.create({
-        title: titleAr,
-        title_ar: titleAr,
-        image_url: imageUri,
+        title: 'صورة',
+        title_ar: 'صورة',
+        image_url: serverUrl,
         is_active: true,
       });
       
       Alert.alert('نجاح', 'تمت إضافة الصورة بنجاح');
-      setTitleAr('');
       setImageUri('');
       setModalVisible(false);
       fetchSlides();
     } catch (error: any) {
-      Alert.alert('خطأ', error.message);
+      console.error('Add slide error:', error);
+      Alert.alert('خطأ', error.message || 'حدث خطأ في رفع الصورة');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -230,30 +247,27 @@ export const AdminSlideshow: React.FC = () => {
                 )}
               </TouchableOpacity>
 
-              <TextInput
-                style={[styles.input, styles.inputRTL]}
-                placeholder="عنوان الصورة"
-                value={titleAr}
-                onChangeText={setTitleAr}
-                placeholderTextColor={colors.textSecondary}
-              />
-
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.cancelButton]}
                   onPress={() => {
                     setModalVisible(false);
                     setImageUri('');
-                    setTitleAr('');
                   }}
+                  disabled={uploading}
                 >
                   <Text style={styles.cancelButtonText}>إلغاء</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.submitButton]}
+                  style={[styles.modalButton, styles.submitButton, uploading && styles.disabledButton]}
                   onPress={handleAddSlide}
+                  disabled={uploading}
                 >
-                  <Text style={styles.submitButtonText}>إضافة</Text>
+                  {uploading ? (
+                    <ActivityIndicator size="small" color={colors.textLight} />
+                  ) : (
+                    <Text style={styles.submitButtonText}>إضافة</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -415,19 +429,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.card,
-  },
-  inputRTL: {
-    textAlign: 'right',
-  },
   modalButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -452,5 +453,8 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: colors.textLight,
     fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });

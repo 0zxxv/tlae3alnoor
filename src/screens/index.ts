@@ -14,6 +14,7 @@ export { ParentDashboard } from './parent/ParentDashboard';
 export { ParentAnnouncements } from './parent/ParentAnnouncements';
 export { ParentEvents } from './parent/ParentEvents';
 export { ParentEvaluations } from './parent/ParentEvaluations';
+export { ParentChat } from './parent/ParentChat';
 
 // Admin Screens
 export { AdminDashboard } from './admin/AdminDashboard';
@@ -23,4 +24,5 @@ export { AdminSlideshow } from './admin/AdminSlideshow';
 export { AdminParents } from './admin/AdminParents';
 export { AdminTeachers } from './admin/AdminTeachers';
 export { AdminEvaluationForms } from './admin/AdminEvaluationForms';
+export { AdminChat } from './admin/AdminChat';
 
