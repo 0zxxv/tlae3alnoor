@@ -9,6 +9,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
@@ -18,6 +19,7 @@ import { Event } from '../../types';
 
 export const AdminEvents: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [modalVisible, setModalVisible] = useState(false);
   const [titleAr, setTitleAr] = useState('');
@@ -81,6 +83,15 @@ export const AdminEvents: React.FC = () => {
       <Header showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة التحكم</Text>
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="calendar" size={28} color={colors.primary} />
@@ -348,5 +359,16 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

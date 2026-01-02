@@ -4,7 +4,9 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +16,7 @@ import { mockGrades } from '../../data/mockData';
 
 export const ParentGrades: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const { selectedChild } = useAuth();
 
   // Get grades for selected child
@@ -32,6 +35,15 @@ export const ParentGrades: React.FC = () => {
       <Header showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة الرئيسية</Text>
+        </TouchableOpacity>
+
         <Text style={[styles.title, isRTL && styles.textRTL]}>
           {t('grades')}
         </Text>
@@ -187,5 +199,16 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

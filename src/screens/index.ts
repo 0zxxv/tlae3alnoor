@@ -25,4 +25,6 @@ export { AdminParents } from './admin/AdminParents';
 export { AdminTeachers } from './admin/AdminTeachers';
 export { AdminEvaluationForms } from './admin/AdminEvaluationForms';
 export { AdminChat } from './admin/AdminChat';
+export { AdminAttendance } from './admin/AdminAttendance';
+export { AdminAverageGrades } from './admin/AdminAverageGrades';
 

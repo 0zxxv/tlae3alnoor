@@ -38,14 +38,13 @@ const ParentTabs: React.FC = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarLabelStyle: styles.tabLabel,
+        tabBarShowLabel: false,
       }}
     >
       <Tab.Screen
         name="Home"
         component={ParentStack}
         options={{
-          tabBarLabel: t('home'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'home' : 'home-outline'} 
@@ -59,7 +58,6 @@ const ParentTabs: React.FC = () => {
         name="Evaluations"
         component={ParentEvaluations}
         options={{
-          tabBarLabel: 'تقييم',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'clipboard' : 'clipboard-outline'} 
@@ -73,7 +71,6 @@ const ParentTabs: React.FC = () => {
         name="Announcements"
         component={ParentAnnouncements}
         options={{
-          tabBarLabel: t('announcements'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'megaphone' : 'megaphone-outline'} 
@@ -87,7 +84,6 @@ const ParentTabs: React.FC = () => {
         name="Events"
         component={ParentEvents}
         options={{
-          tabBarLabel: t('events'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'calendar' : 'calendar-outline'}
@@ -101,7 +97,6 @@ const ParentTabs: React.FC = () => {
         name="Chat"
         component={ParentChat}
         options={{
-          tabBarLabel: t('chat'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
@@ -133,11 +128,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: 8,
-    height: 70,
-  },
-  tabLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    height: 60,
   },
 });

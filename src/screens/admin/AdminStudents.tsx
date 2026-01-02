@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
@@ -31,6 +32,7 @@ interface Student {
 
 export const AdminStudents: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -199,6 +201,15 @@ export const AdminStudents: React.FC = () => {
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
+          {/* Back button */}
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+            <Text style={styles.backText}>العودة للوحة التحكم</Text>
+          </TouchableOpacity>
+
           <View style={styles.header}>
             <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
               <Ionicons name="school" size={28} color={colors.primary} />

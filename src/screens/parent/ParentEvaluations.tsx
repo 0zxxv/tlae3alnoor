@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Dimensions,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -55,6 +56,7 @@ const CATEGORY_ICONS: { [key: string]: string } = {
 
 export const ParentEvaluations: React.FC = () => {
   const { isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const { selectedChild } = useAuth();
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,6 +154,15 @@ export const ParentEvaluations: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة الرئيسية</Text>
+        </TouchableOpacity>
+
         <Text style={[styles.title, isRTL && styles.textRTL]}>
           التقييم
         </Text>
@@ -653,5 +664,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.textSecondary,
     marginTop: 32,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

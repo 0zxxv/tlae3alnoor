@@ -36,14 +36,13 @@ export const TeacherNavigator: React.FC = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarLabelStyle: styles.tabLabel,
+        tabBarShowLabel: false,
       }}
     >
       <Tab.Screen
         name="Home"
         component={TeacherStack}
         options={{
-          tabBarLabel: t('home'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'home' : 'home-outline'} 
@@ -57,7 +56,6 @@ export const TeacherNavigator: React.FC = () => {
         name="Grades"
         component={TeacherGrades}
         options={{
-          tabBarLabel: t('grades'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'create' : 'create-outline'} 
@@ -71,7 +69,6 @@ export const TeacherNavigator: React.FC = () => {
         name="Announcements"
         component={TeacherAnnouncements}
         options={{
-          tabBarLabel: t('announcements'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'megaphone' : 'megaphone-outline'} 
@@ -85,7 +82,6 @@ export const TeacherNavigator: React.FC = () => {
         name="Evaluations"
         component={TeacherEvaluations}
         options={{
-          tabBarLabel: 'تقييم',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'clipboard' : 'clipboard-outline'} 
@@ -99,7 +95,6 @@ export const TeacherNavigator: React.FC = () => {
         name="Chat"
         component={TeacherChat}
         options={{
-          tabBarLabel: t('chat'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'} 
@@ -120,11 +115,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: 8,
-    height: 70,
-  },
-  tabLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    height: 60,
   },
 });

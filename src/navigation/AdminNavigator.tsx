@@ -14,6 +14,8 @@ import {
   AdminTeachers,
   AdminEvaluationForms,
   AdminChat,
+  AdminAttendance,
+  AdminAverageGrades,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -29,6 +31,8 @@ const AdminStack = () => (
     <Stack.Screen name="AdminTeachers" component={AdminTeachers} />
     <Stack.Screen name="AdminEvaluationForms" component={AdminEvaluationForms} />
     <Stack.Screen name="AdminChat" component={AdminChat} />
+    <Stack.Screen name="AdminAttendance" component={AdminAttendance} />
+    <Stack.Screen name="AdminAverageGrades" component={AdminAverageGrades} />
   </Stack.Navigator>
 );
 
@@ -42,14 +46,13 @@ export const AdminNavigator: React.FC = () => {
         tabBarStyle: styles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarLabelStyle: styles.tabLabel,
+        tabBarShowLabel: false,
       }}
     >
       <Tab.Screen
         name="Home"
         component={AdminStack}
         options={{
-          tabBarLabel: t('home'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'home' : 'home-outline'} 
@@ -63,7 +66,6 @@ export const AdminNavigator: React.FC = () => {
         name="Students"
         component={AdminStudents}
         options={{
-          tabBarLabel: t('students'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'school' : 'school-outline'} 
@@ -77,7 +79,6 @@ export const AdminNavigator: React.FC = () => {
         name="Events"
         component={AdminEvents}
         options={{
-          tabBarLabel: t('events'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'calendar' : 'calendar-outline'} 
@@ -91,7 +92,6 @@ export const AdminNavigator: React.FC = () => {
         name="Slideshow"
         component={AdminSlideshow}
         options={{
-          tabBarLabel: t('slideshow'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'images' : 'images-outline'}
@@ -105,7 +105,6 @@ export const AdminNavigator: React.FC = () => {
         name="Chat"
         component={AdminChat}
         options={{
-          tabBarLabel: t('chat'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
@@ -126,11 +125,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: 8,
-    height: 70,
-  },
-  tabLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    height: 60,
   },
 });

@@ -130,20 +130,37 @@ export const evaluationsApi = {
 
 // Upload image to server
 export const uploadImage = async (base64Image: string): Promise<string> => {
-  const response = await fetch(`${API_BASE_URL}/upload`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ image: base64Image }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to upload image');
+  if (!base64Image) {
+    throw new Error('No image data provided');
   }
 
-  const data = await response.json();
-  return `${SERVER_BASE_URL}${data.url}`;
+  try {
+    const response = await fetch(`${API_BASE_URL}/upload`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: base64Image }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Upload error response:', errorText);
+      throw new Error(`Failed to upload image: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data || !data.url) {
+      console.error('Invalid response data:', data);
+      throw new Error('Invalid response from server');
+    }
+
+    return `${SERVER_BASE_URL}${data.url}`;
+  } catch (error: any) {
+    console.error('Upload image error:', error);
+    throw error;
+  }
 };
 
 // Export configuration setter

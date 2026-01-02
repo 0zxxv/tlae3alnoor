@@ -138,14 +138,13 @@ export const GuestNavigator: React.FC = () => {
         tabBarStyle: tabStyles.tabBar,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarLabelStyle: tabStyles.tabLabel,
+        tabBarShowLabel: false,
       }}
     >
       <Tab.Screen
         name="Home"
         component={GuestStack}
         options={{
-          tabBarLabel: t('home'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'home' : 'home-outline'} 
@@ -159,7 +158,6 @@ export const GuestNavigator: React.FC = () => {
         name="Events"
         component={ParentEvents}
         options={{
-          tabBarLabel: t('events'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'calendar' : 'calendar-outline'} 
@@ -173,7 +171,6 @@ export const GuestNavigator: React.FC = () => {
         name="Announcements"
         component={ParentAnnouncements}
         options={{
-          tabBarLabel: t('announcements'),
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'megaphone' : 'megaphone-outline'} 
@@ -301,12 +298,7 @@ const tabStyles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: 8,
-    height: 70,
-  },
-  tabLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
+    height: 60,
   },
 });
 

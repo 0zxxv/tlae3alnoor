@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
@@ -16,6 +17,7 @@ type EventFilter = 'all' | 'upcoming' | 'current' | 'previous';
 
 export const ParentEvents: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const [filter, setFilter] = useState<EventFilter>('all');
 
   const filters: { key: EventFilter; labelAr: string; icon: keyof typeof Ionicons.glyphMap }[] = [
@@ -34,6 +36,15 @@ export const ParentEvents: React.FC = () => {
       <Header showLogout />
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة الرئيسية</Text>
+        </TouchableOpacity>
+
         <View style={[styles.headerRow, isRTL && styles.headerRowRTL]}>
           <Ionicons name="calendar" size={28} color={colors.primary} />
           <Text style={[styles.title, isRTL && styles.textRTL]}>
@@ -156,5 +167,16 @@ const styles = StyleSheet.create({
   noDataText: {
     fontSize: 16,
     color: colors.textSecondary,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

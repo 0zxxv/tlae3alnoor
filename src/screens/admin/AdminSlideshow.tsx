@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
@@ -22,11 +23,13 @@ import * as FileSystem from 'expo-file-system';
 
 export const AdminSlideshow: React.FC = () => {
   const { t, isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const [slides, setSlides] = useState<SlideShowImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState('');
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const fetchSlides = useCallback(async () => {
@@ -69,10 +72,17 @@ export const AdminSlideshow: React.FC = () => {
       allowsEditing: true,
       aspect: [16, 9],
       quality: 0.8,
+      base64: true, // Get base64 directly from image picker
     });
 
     if (!result.canceled && result.assets[0]) {
       setImageUri(result.assets[0].uri);
+      // Store base64 if available from image picker
+      if (result.assets[0].base64) {
+        setImageBase64(result.assets[0].base64);
+      } else {
+        setImageBase64(null);
+      }
     }
   };
 
@@ -84,13 +94,36 @@ export const AdminSlideshow: React.FC = () => {
 
     setUploading(true);
     try {
-      // Convert image to base64
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      let base64: string;
       
-      // Get file extension
-      const extension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+      // Try to use base64 from image picker first (more reliable)
+      if (imageBase64) {
+        base64 = imageBase64;
+      } else {
+        // Fallback to reading from file system
+        const fileInfo = await FileSystem.getInfoAsync(imageUri);
+        if (!fileInfo.exists) {
+          throw new Error('الصورة غير موجودة');
+        }
+
+        base64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        
+        if (!base64) {
+          throw new Error('فشل في قراءة الصورة');
+        }
+      }
+      
+      // Get file extension from URI or default to jpg
+      const uriLower = imageUri.toLowerCase();
+      let extension = 'jpg';
+      if (uriLower.includes('.png')) {
+        extension = 'png';
+      } else if (uriLower.includes('.jpeg') || uriLower.includes('.jpg')) {
+        extension = 'jpg';
+      }
+      
       const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
       const base64WithPrefix = `data:${mimeType};base64,${base64}`;
       
@@ -107,6 +140,7 @@ export const AdminSlideshow: React.FC = () => {
       
       Alert.alert('نجاح', 'تمت إضافة الصورة بنجاح');
       setImageUri('');
+      setImageBase64(null);
       setModalVisible(false);
       fetchSlides();
     } catch (error: any) {
@@ -160,6 +194,15 @@ export const AdminSlideshow: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة التحكم</Text>
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
             <Ionicons name="images" size={28} color={colors.primary} />
@@ -456,5 +499,16 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.6,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
 });

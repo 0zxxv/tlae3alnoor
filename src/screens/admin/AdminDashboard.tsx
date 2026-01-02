@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,17 +6,61 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card } from '../../components';
-import { mockStudents, mockEvents, mockSlideshow } from '../../data/mockData';
+import { studentsApi, gradesApi } from '../../services/api';
+import { mockStudents, mockEvents } from '../../data/mockData';
 
 export const AdminDashboard: React.FC = () => {
   const { t, isRTL } = useLanguage();
   const navigation = useNavigation<any>();
+  const [loading, setLoading] = useState(true);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [averageAttendance, setAverageAttendance] = useState(0);
+  const [averageGrades, setAverageGrades] = useState(0);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const [studentsData, gradesData] = await Promise.all([
+        studentsApi.getAll(),
+        gradesApi.getAll(),
+      ]);
+
+      // Total students count
+      setTotalStudents(studentsData.length);
+
+      // Calculate average grades percentage
+      if (gradesData.length > 0) {
+        const totalPercentage = gradesData.reduce((sum: number, grade: any) => {
+          if (grade.max_score && grade.max_score > 0) {
+            return sum + (grade.score / grade.max_score) * 100;
+          }
+          return sum;
+        }, 0);
+        const avg = Math.round(totalPercentage / gradesData.length);
+        setAverageGrades(avg);
+      } else {
+        setAverageGrades(0);
+      }
+
+      // TODO: Calculate average attendance when attendance API is available
+      // For now, using a placeholder percentage
+      setAverageAttendance(85); // Placeholder value
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const quickActions = [
     { id: 'parents', titleAr: 'أولياء الأمور', icon: 'people' as const, screen: 'AdminParents' },
@@ -28,9 +72,29 @@ export const AdminDashboard: React.FC = () => {
   ];
 
   const stats = [
-    { label: 'الطالبات', value: mockStudents.length, icon: 'school' as const, color: colors.primary },
-    { label: 'الفعاليات', value: mockEvents.length, icon: 'calendar' as const, color: colors.success },
-    { label: 'الصور', value: mockSlideshow.length, icon: 'images' as const, color: colors.warning },
+    { 
+      label: 'الحضور', 
+      value: `${averageAttendance}%`, 
+      icon: 'calendar' as const, 
+      color: colors.success,
+      onPress: () => navigation.navigate('AdminAttendance'),
+      pressable: true,
+    },
+    { 
+      label: 'متوسط الدرجات', 
+      value: `${averageGrades}%`, 
+      icon: 'stats-chart' as const, 
+      color: colors.warning,
+      onPress: () => navigation.navigate('AdminAverageGrades'),
+      pressable: true,
+    },
+    { 
+      label: 'الطالبات', 
+      value: totalStudents, 
+      icon: 'school' as const, 
+      color: colors.primary,
+      pressable: false,
+    },
   ];
 
   return (
@@ -54,15 +118,29 @@ export const AdminDashboard: React.FC = () => {
         </View>
 
         {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <Ionicons name={stat.icon} size={24} color={stat.color} />
-              <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : (
+          <View style={styles.statsContainer}>
+            {stats.map((stat, index) => {
+              const StatComponent = stat.pressable ? TouchableOpacity : View;
+              return (
+                <StatComponent
+                  key={index}
+                  style={[styles.statCard, stat.pressable && styles.statCardPressable]}
+                  onPress={stat.pressable ? stat.onPress : undefined}
+                  activeOpacity={stat.pressable ? 0.7 : 1}
+                >
+                  <Ionicons name={stat.icon} size={24} color={stat.color} />
+                  <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
+                </StatComponent>
+              );
+            })}
+          </View>
+        )}
 
         {/* Quick Actions */}
         <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
@@ -91,25 +169,6 @@ export const AdminDashboard: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Recent Activity */}
-        <Card title="الطالبات المسجلات" titleAr="الطالبات المسجلات">
-          {mockStudents.slice(0, 3).map((student) => (
-            <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
-              <View style={styles.studentAvatar}>
-                <Ionicons name="person" size={20} color={colors.textLight} />
-              </View>
-              <View style={styles.studentInfo}>
-                <Text style={[styles.studentName, isRTL && styles.textRTL]}>
-                  {student.nameAr || student.name}
-                </Text>
-                <Text style={[styles.studentGrade, isRTL && styles.textRTL]}>
-                  {student.gradeAr || student.grade}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </Card>
 
         {/* Upcoming Events Preview */}
         <Card title="الفعاليات القادمة" titleAr="الفعاليات القادمة">
@@ -180,6 +239,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  statCardPressable: {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    marginBottom: 24,
   },
   statValue: {
     fontSize: 28,

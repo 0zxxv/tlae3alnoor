@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
@@ -36,6 +37,7 @@ interface EvaluationForm {
 
 export const AdminEvaluationForms: React.FC = () => {
   const { isRTL } = useLanguage();
+  const navigation = useNavigation<any>();
   const [forms, setForms] = useState<EvaluationForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -185,6 +187,15 @@ export const AdminEvaluationForms: React.FC = () => {
         style={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة التحكم</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => {
@@ -456,6 +467,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 32,
     fontSize: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
   fullModal: {
     flex: 1,
