@@ -44,7 +44,6 @@ interface EvaluationForm {
 const ANSWER_OPTIONS = [
   { id: 'completed', label: 'أنجزت', icon: 'checkmark-circle', color: colors.success },
   { id: 'needs_followup', label: 'تحتاج متابعة', icon: 'alert-circle', color: colors.warning },
-  { id: 'notes', label: 'ملاحظات', icon: 'create', color: colors.textSecondary },
 ];
 
 export const TeacherEvaluations: React.FC = () => {
@@ -64,9 +63,6 @@ export const TeacherEvaluations: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [answers, setAnswers] = useState<{ [questionId: string]: { type: string; notes?: string } }>({});
   const [submitting, setSubmitting] = useState(false);
-  const [notesModalVisible, setNotesModalVisible] = useState(false);
-  const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
-  const [currentNotes, setCurrentNotes] = useState('');
 
   const fetchData = useCallback(async () => {
     try {
@@ -116,29 +112,24 @@ export const TeacherEvaluations: React.FC = () => {
   };
 
   const handleSelectAnswer = (questionId: string, type: string) => {
-    if (type === 'notes') {
-      // Show notes input modal
-      setCurrentQuestionId(questionId);
-      setCurrentNotes(answers[questionId]?.notes || '');
-      setNotesModalVisible(true);
-    } else {
-      setAnswers(prev => ({ 
-        ...prev, 
-        [questionId]: { type, notes: undefined } 
-      }));
-    }
+    setAnswers(prev => ({ 
+      ...prev, 
+      [questionId]: { 
+        type, 
+        notes: prev[questionId]?.notes || '' // Keep existing notes if any
+      } 
+    }));
   };
 
-  const handleSaveNotes = () => {
-    if (currentQuestionId && currentNotes.trim()) {
-      setAnswers(prev => ({
-        ...prev,
-        [currentQuestionId]: { type: 'notes', notes: currentNotes.trim() }
-      }));
-    }
-    setNotesModalVisible(false);
-    setCurrentQuestionId(null);
-    setCurrentNotes('');
+  const handleNotesChange = (questionId: string, notes: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: {
+        ...prev[questionId],
+        type: prev[questionId]?.type || 'completed', // Keep existing type or default
+        notes: notes
+      }
+    }));
   };
 
   const handleSubmitEvaluation = async () => {
@@ -348,53 +339,22 @@ export const TeacherEvaluations: React.FC = () => {
                     </TouchableOpacity>
                   ))}
                 </View>
-                {answers[question.id]?.type === 'notes' && answers[question.id]?.notes && (
-                  <View style={styles.notesPreview}>
-                    <Text style={styles.notesPreviewText}>{answers[question.id].notes}</Text>
-                  </View>
-                )}
+                <TextInput
+                  style={styles.notesInput}
+                  placeholder="ملاحظات (اختياري)..."
+                  value={answers[question.id]?.notes || ''}
+                  onChangeText={(text) => handleNotesChange(question.id, text)}
+                  multiline
+                  numberOfLines={3}
+                  placeholderTextColor={colors.textSecondary}
+                  textAlign="right"
+                />
               </View>
             ))}
           </ScrollView>
         </View>
       </Modal>
 
-      {/* Notes Input Modal */}
-      <Modal visible={notesModalVisible} animationType="fade" transparent>
-        <View style={styles.notesModalOverlay}>
-          <View style={styles.notesModalContent}>
-            <Text style={styles.notesModalTitle}>أضف ملاحظاتك</Text>
-            <TextInput
-              style={styles.notesInput}
-              placeholder="اكتب ملاحظاتك هنا..."
-              value={currentNotes}
-              onChangeText={setCurrentNotes}
-              multiline
-              numberOfLines={4}
-              placeholderTextColor={colors.textSecondary}
-              textAlign="right"
-            />
-            <View style={styles.notesModalButtons}>
-              <TouchableOpacity
-                style={[styles.notesButton, styles.cancelButton]}
-                onPress={() => {
-                  setNotesModalVisible(false);
-                  setCurrentQuestionId(null);
-                  setCurrentNotes('');
-                }}
-              >
-                <Text style={styles.cancelButtonText}>إلغاء</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.notesButton, styles.submitButton]}
-                onPress={handleSaveNotes}
-              >
-                <Text style={styles.submitButtonText}>حفظ</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -605,72 +565,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  notesPreview: {
-    marginTop: 12,
-    padding: 10,
-    backgroundColor: colors.backgroundSecondary,
-    borderRadius: 8,
-  },
-  notesPreviewText: {
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'right',
-  },
-  notesModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  notesModalContent: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-  },
-  notesModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 16,
-    textAlign: 'right',
-  },
   notesInput: {
+    marginTop: 12,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
     padding: 12,
-    minHeight: 100,
-    fontSize: 16,
+    minHeight: 80,
+    fontSize: 14,
     color: colors.text,
     backgroundColor: colors.background,
     textAlignVertical: 'top',
-  },
-  notesModalButtons: {
-    flexDirection: 'row',
-    marginTop: 16,
-    gap: 12,
-  },
-  notesButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: colors.backgroundSecondary,
-  },
-  cancelButtonText: {
-    color: colors.text,
-    fontWeight: '600',
-  },
-  submitButton: {
-    backgroundColor: colors.primary,
-  },
-  submitButtonText: {
-    color: colors.textLight,
-    fontWeight: '600',
   },
 });

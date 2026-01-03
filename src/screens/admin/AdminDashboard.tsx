@@ -14,7 +14,6 @@ import { useLanguage } from '../../context/LanguageContext';
 import { colors } from '../../theme/colors';
 import { Header, Card } from '../../components';
 import { studentsApi, gradesApi } from '../../services/api';
-import { mockStudents, mockEvents } from '../../data/mockData';
 
 export const AdminDashboard: React.FC = () => {
   const { t, isRTL } = useLanguage();
@@ -169,23 +168,6 @@ export const AdminDashboard: React.FC = () => {
             </TouchableOpacity>
           ))}
         </View>
-
-        {/* Upcoming Events Preview */}
-        <Card title="الفعاليات القادمة" titleAr="الفعاليات القادمة">
-          {mockEvents.filter(e => e.type === 'upcoming').slice(0, 2).map((event) => (
-            <View key={event.id} style={styles.eventItem}>
-              <View style={[styles.eventRow, isRTL && styles.eventRowRTL]}>
-                <Ionicons name="calendar-outline" size={16} color={colors.primary} />
-                <Text style={[styles.eventTitle, isRTL && styles.textRTL]}>
-                  {event.titleAr || event.title}
-                </Text>
-              </View>
-              <Text style={[styles.eventDate, isRTL && styles.textRTL]}>
-                {new Date(event.date).toLocaleDateString('ar-SA')}
-              </Text>
-            </View>
-          ))}
-        </Card>
       </ScrollView>
     </View>
   );
@@ -295,61 +277,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-  },
-  studentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: 12,
-  },
-  studentItemRTL: {
-    flexDirection: 'row-reverse',
-  },
-  studentAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  studentInfo: {
-    flex: 1,
-  },
-  studentName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  studentGrade: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  eventItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  eventRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  eventRowRTL: {
-    flexDirection: 'row-reverse',
-  },
-  eventTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 4,
-    flex: 1,
-  },
-  eventDate: {
-    fontSize: 12,
-    color: colors.primary,
-    marginLeft: 24,
   },
 });

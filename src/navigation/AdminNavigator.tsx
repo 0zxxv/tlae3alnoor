@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     paddingTop: 8,
     paddingBottom: 8,
+    paddingHorizontal: 16,
     height: 60,
   },
 });
