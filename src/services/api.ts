@@ -2,16 +2,18 @@
 // For Android emulator: use 10.0.2.2
 // For iOS simulator: use localhost
 // For physical device: use your computer's IP address
-const API_BASE_URL = 'http://172.20.10.11:3001/api';
-export const SERVER_BASE_URL = 'http://172.20.10.11:3001';
+const API_BASE_URL = 'http://192.168.100.12:3001/api';
+export const SERVER_BASE_URL = 'http://192.168.100.12:3001';
 
-// Helper function for API calls
+// Helper function for API calls with timeout
 async function apiCall<T>(
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body?: any
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  console.log(`[API] ${method} ${url}`);
   
   const options: RequestInit = {
     method,
@@ -24,14 +26,55 @@ async function apiCall<T>(
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(url, options);
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Network error' }));
-    throw new Error(error.error || 'API request failed');
-  }
+  try {
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-  return response.json();
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+    } catch (fetchError: any) {
+      clearTimeout(timeoutId);
+      // Network error - server not reachable
+      if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
+        console.error(`[API Network Error] Cannot reach server at ${url}`);
+        throw new Error(`Cannot connect to server. Make sure:\n1. Backend is running (npm start in backend folder)\n2. IP address is correct: ${API_BASE_URL}\n3. Phone and computer are on same Wi-Fi`);
+      }
+      throw fetchError;
+    }
+
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+      }
+      console.error(`[API Error] ${method} ${endpoint}:`, errorData);
+      throw new Error(errorData.error || `API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`[API Success] ${method} ${endpoint}`);
+    return data;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error(`[API Timeout] ${method} ${endpoint} - Request took too long`);
+      throw new Error('Request timeout - Server is not responding. Check if backend is running.');
+    }
+    // Re-throw if it's already our formatted error
+    if (error.message && error.message.includes('Cannot connect')) {
+      throw error;
+    }
+    console.error(`[API Error] ${method} ${endpoint}:`, error.message || error);
+    throw new Error(error.message || 'Network error occurred');
+  }
 }
 
 // Auth API
@@ -160,6 +203,25 @@ export const uploadImage = async (base64Image: string): Promise<string> => {
   } catch (error: any) {
     console.error('Upload image error:', error);
     throw error;
+  }
+};
+
+// Health check function to test backend connection
+export const checkBackendHealth = async (): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    return response.ok;
+  } catch (error) {
+    console.error('Backend health check failed:', error);
+    return false;
   }
 };
 

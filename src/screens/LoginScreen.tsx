@@ -34,8 +34,17 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
     try {
       await login(role);
-    } catch (error) {
-      Alert.alert('خطأ', 'فشل تسجيل الدخول. تأكد من اتصال الخادم.');
+    } catch (error: any) {
+      console.error('Login error details:', error);
+      const errorMessage = error?.message || 'فشل تسجيل الدخول';
+      
+      // Show the error message directly (it already contains helpful instructions)
+      Alert.alert(
+        'خطأ في الاتصال', 
+        errorMessage.includes('Cannot connect') || errorMessage.includes('timeout')
+          ? errorMessage
+          : `فشل تسجيل الدخول:\n${errorMessage}`
+      );
     } finally {
       setLoading(false);
     }

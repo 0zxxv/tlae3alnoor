@@ -37,7 +37,6 @@ export async function apiCall<T>(
       'Content-Type': 'application/json',
     },
   };
-
   if (body) {
     options.body = JSON.stringify(body);
   }
@@ -56,4 +55,5 @@ export async function apiCall<T>(
     throw error;
   }
 }
+
 
