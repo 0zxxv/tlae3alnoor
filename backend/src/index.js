@@ -82,6 +82,7 @@ async function startServer() {
     const announcementsRoutes = require('./routes/announcements');
     const gradesRoutes = require('./routes/grades');
     const evaluationsRoutes = require('./routes/evaluations');
+    const attendanceRoutes = require('./routes/attendance');
 
     // Use routes
     app.use('/api/auth', authRoutes);
@@ -93,6 +94,7 @@ async function startServer() {
     app.use('/api/announcements', announcementsRoutes);
     app.use('/api/grades', gradesRoutes);
     app.use('/api/evaluations', evaluationsRoutes);
+    app.use('/api/attendance', attendanceRoutes);
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);

@@ -171,6 +171,21 @@ export const evaluationsApi = {
   delete: (id: string) => apiCall<any>(`/evaluations/${id}`, 'DELETE'),
 };
 
+// Attendance API
+export const attendanceApi = {
+  getAll: (params?: { student_id?: string; date?: string; teacher_id?: string }) => {
+    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    return apiCall<any[]>(`/attendance${queryString}`);
+  },
+  getByDate: (date: string) => apiCall<any[]>(`/attendance/date/${date}`),
+  getByStudent: (studentId: string) => apiCall<any>(`/attendance/student/${studentId}`),
+  create: (data: { student_id: string; teacher_id: string; date: string; status: string; notes?: string }) =>
+    apiCall<any>('/attendance', 'POST', data),
+  bulkCreate: (data: { teacher_id: string; date: string; attendance_records: Array<{ student_id: string; status: string; notes?: string }> }) =>
+    apiCall<any>('/attendance/bulk', 'POST', data),
+  delete: (id: string) => apiCall<any>(`/attendance/${id}`, 'DELETE'),
+};
+
 // Upload image to server
 export const uploadImage = async (base64Image: string): Promise<string> => {
   if (!base64Image) {

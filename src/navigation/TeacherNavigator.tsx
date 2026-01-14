@@ -9,8 +9,8 @@ import {
   TeacherDashboard,
   TeacherGrades,
   TeacherAnnouncements,
-  TeacherChat,
   TeacherEvaluations,
+  TeacherAttendance,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -21,8 +21,8 @@ const TeacherStack = () => (
     <Stack.Screen name="TeacherDashboard" component={TeacherDashboard} />
     <Stack.Screen name="TeacherGrades" component={TeacherGrades} />
     <Stack.Screen name="TeacherAnnouncements" component={TeacherAnnouncements} />
-    <Stack.Screen name="TeacherChat" component={TeacherChat} />
     <Stack.Screen name="TeacherEvaluations" component={TeacherEvaluations} />
+    <Stack.Screen name="TeacherAttendance" component={TeacherAttendance} />
   </Stack.Navigator>
 );
 
@@ -85,19 +85,6 @@ export const TeacherNavigator: React.FC = () => {
           tabBarIcon: ({ focused, color }) => (
             <Ionicons 
               name={focused ? 'clipboard' : 'clipboard-outline'} 
-              size={24} 
-              color={color} 
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Chat"
-        component={TeacherChat}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons 
-              name={focused ? 'chatbubbles' : 'chatbubbles-outline'} 
               size={24} 
               color={color} 
             />

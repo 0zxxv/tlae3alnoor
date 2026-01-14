@@ -21,8 +21,8 @@ export const TeacherDashboard: React.FC = () => {
 
   const quickActions = [
     { id: 'grades', titleAr: 'إضافة درجة', icon: 'create-outline' as const, screen: 'TeacherGrades' },
+    { id: 'attendance', titleAr: 'تسجيل الحضور', icon: 'calendar-outline' as const, screen: 'TeacherAttendance' },
     { id: 'announcements', titleAr: 'إرسال إعلان', icon: 'megaphone-outline' as const, screen: 'TeacherAnnouncements' },
-    { id: 'chat', titleAr: 'المحادثات', icon: 'chatbubbles-outline' as const, screen: 'TeacherChat' },
   ];
 
   const stats = [

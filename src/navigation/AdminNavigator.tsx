@@ -13,7 +13,6 @@ import {
   AdminParents,
   AdminTeachers,
   AdminEvaluationForms,
-  AdminChat,
   AdminAttendance,
   AdminAverageGrades,
 } from '../screens';
@@ -30,7 +29,6 @@ const AdminStack = () => (
     <Stack.Screen name="AdminParents" component={AdminParents} />
     <Stack.Screen name="AdminTeachers" component={AdminTeachers} />
     <Stack.Screen name="AdminEvaluationForms" component={AdminEvaluationForms} />
-    <Stack.Screen name="AdminChat" component={AdminChat} />
     <Stack.Screen name="AdminAttendance" component={AdminAttendance} />
     <Stack.Screen name="AdminAverageGrades" component={AdminAverageGrades} />
   </Stack.Navigator>
@@ -95,19 +93,6 @@ export const AdminNavigator: React.FC = () => {
           tabBarIcon: ({ focused, color }) => (
             <Ionicons
               name={focused ? 'images' : 'images-outline'}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Chat"
-        component={AdminChat}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons
-              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
               size={24}
               color={color}
             />

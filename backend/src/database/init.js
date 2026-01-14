@@ -373,6 +373,28 @@ function insertSampleData() {
   db.run(`INSERT INTO evaluation_answer_options (id, question_id, option_text, option_text_ar, option_value, display_order) VALUES (?, ?, ?, ?, ?, ?)`,
     [uuidv4(), q2Id, 'Fail', 'راسب', 0, 2]);
 
+  // Sample Attendance Data - Add attendance for past 7 days
+  const allStudents = [student1Id, student2Id, student3Id];
+  const statuses = ['present', 'absent', 'present', 'present', 'present', 'absent', 'present'];
+  
+  for (let day = 0; day < 7; day++) {
+    const date = getDateString(day);
+    allStudents.forEach((studentId, studentIndex) => {
+      // Vary attendance - most students present most days, occasional absences
+      let status = 'present';
+      if (Math.random() < 0.15) { // 15% chance of absence
+        status = 'absent';
+      } else if (day === 2 && studentIndex === 1) { // Student 2 absent on day 2
+        status = 'absent';
+      } else if (day === 5 && studentIndex === 0) { // Student 1 absent on day 5
+        status = 'absent';
+      }
+      
+      db.run(`INSERT INTO attendance (id, student_id, teacher_id, date, status) VALUES (?, ?, ?, ?, ?)`,
+        [uuidv4(), studentId, teacher1Id, date, status]);
+    });
+  }
+
   console.log('✅ Sample data inserted successfully');
 }
 
