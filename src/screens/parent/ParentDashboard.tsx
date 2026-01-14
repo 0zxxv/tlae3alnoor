@@ -150,7 +150,7 @@ export const ParentDashboard: React.FC = () => {
         {slides.length > 0 && <Slideshow images={slides} />}
 
         {/* Quick Stats */}
-        <View style={styles.statsContainer}>
+        <View style={[styles.statsContainer, styles.roundedSection]}>
           <View style={styles.statCard}>
             <Ionicons name="school" size={20} color={colors.accentYellow} />
             <Text style={[styles.statValue, { color: colors.accentYellow }]}>{grades.length}</Text>
@@ -169,7 +169,7 @@ export const ParentDashboard: React.FC = () => {
         </View>
 
         {/* Recent Grades */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.roundedSection]}>
           <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
             <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
               {t('grades')}
@@ -195,7 +195,7 @@ export const ParentDashboard: React.FC = () => {
         </View>
 
         {/* Announcements */}
-        <View style={styles.section}>
+        <View style={[styles.section, styles.roundedSection]}>
           <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
             <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
               {t('announcements')}
@@ -219,7 +219,7 @@ export const ParentDashboard: React.FC = () => {
 
         {/* Current Events */}
         {currentEvents.length > 0 && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.roundedSection]}>
             <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
               {t('currentEvents')}
             </Text>
@@ -231,7 +231,7 @@ export const ParentDashboard: React.FC = () => {
 
         {/* Upcoming Events */}
         {upcomingEvents.length > 0 && (
-          <View style={styles.section}>
+          <View style={[styles.section, styles.roundedSection]}>
             <View style={[styles.sectionHeader, isRTL && styles.sectionHeaderRTL]}>
               <Text style={[styles.sectionTitle, isRTL && styles.textRTL]}>
                 {t('upcomingEvents')}
@@ -353,6 +353,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginTop: 4,
+  },
+  roundedSection: {
+    backgroundColor: colors.backgroundSecondary,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -24,
+    paddingTop: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   section: {
     paddingHorizontal: 16,

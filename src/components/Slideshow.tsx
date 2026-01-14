@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   slide: {
     width: SLIDE_WIDTH,
-    height: 180,
+    height: 280,
     borderRadius: 0,
     overflow: 'hidden',
     marginRight: 0,
