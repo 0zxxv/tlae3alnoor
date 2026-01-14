@@ -141,8 +141,8 @@ export const ParentDashboard: React.FC = () => {
             </View>
           </View>
           <TouchableOpacity onPress={handleChangeChild} style={styles.changeButton}>
-            <Ionicons name="swap-horizontal" size={18} color={colors.primary} />
-            <Text style={styles.changeText}>تغيير</Text>
+            <Ionicons name="swap-horizontal" size={18} color={colors.accentYellow} />
+            <Text style={[styles.changeText, { color: colors.accentYellow }]}>تغيير</Text>
           </TouchableOpacity>
         </View>
 
@@ -152,13 +152,13 @@ export const ParentDashboard: React.FC = () => {
         {/* Quick Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Ionicons name="school" size={20} color={colors.primary} />
-            <Text style={styles.statValue}>{grades.length}</Text>
+            <Ionicons name="school" size={20} color={colors.accentYellow} />
+            <Text style={[styles.statValue, { color: colors.accentYellow }]}>{grades.length}</Text>
             <Text style={styles.statLabel}>{t('grades')}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="megaphone" size={20} color={colors.primary} />
-            <Text style={styles.statValue}>{announcements.length}</Text>
+            <Ionicons name="megaphone" size={20} color={colors.accentBlue} />
+            <Text style={[styles.statValue, { color: colors.accentBlue }]}>{announcements.length}</Text>
             <Text style={styles.statLabel}>{t('announcements')}</Text>
           </View>
           <View style={styles.statCard}>
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   changeText: {
-    color: colors.primary,
+    color: colors.accentYellow,
     fontWeight: '600',
     fontSize: 14,
   },

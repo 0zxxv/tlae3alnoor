@@ -189,7 +189,7 @@ export const TeacherEvaluations: React.FC = () => {
         style={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <TouchableOpacity style={styles.startButton} onPress={handleStartEvaluation}>
+        <TouchableOpacity style={[styles.startButton, { backgroundColor: colors.accentBlue }]} onPress={handleStartEvaluation}>
           <Ionicons name="clipboard" size={32} color={colors.textLight} />
           <Text style={styles.startButtonText}>بدء تقييم جديد</Text>
           <Text style={styles.startButtonSubtext}>اختر النموذج والطالبة</Text>
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentYellow,
     justifyContent: 'center',
     alignItems: 'center',
   },

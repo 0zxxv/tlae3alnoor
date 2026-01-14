@@ -75,7 +75,7 @@ export const AdminDashboard: React.FC = () => {
       label: 'الحضور', 
       value: `${averageAttendance}%`, 
       icon: 'calendar' as const, 
-      color: colors.success,
+      color: colors.accentBlue,
       onPress: () => navigation.navigate('AdminAttendance'),
       pressable: true,
     },
@@ -83,7 +83,7 @@ export const AdminDashboard: React.FC = () => {
       label: 'متوسط الدرجات', 
       value: `${averageGrades}%`, 
       icon: 'stats-chart' as const, 
-      color: colors.warning,
+      color: colors.accentYellow,
       onPress: () => navigation.navigate('AdminAverageGrades'),
       pressable: true,
     },
@@ -92,7 +92,8 @@ export const AdminDashboard: React.FC = () => {
       value: totalStudents, 
       icon: 'school' as const, 
       color: colors.primary,
-      pressable: false,
+      onPress: () => navigation.navigate('AdminStudents'),
+      pressable: true,
     },
   ];
 
@@ -147,26 +148,29 @@ export const AdminDashboard: React.FC = () => {
         </Text>
         
         <View style={styles.actionsGrid}>
-          {quickActions.map((action) => (
-            <TouchableOpacity
-              key={action.id}
-              style={styles.actionCard}
-              onPress={() => navigation.navigate(action.screen)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.actionIcon}>
-                <Ionicons name={action.icon} size={24} color={colors.primary} />
-              </View>
-              <Text style={[styles.actionText, isRTL && styles.textRTL]}>
-                {action.titleAr}
-              </Text>
-              <Ionicons 
-                name={isRTL ? 'chevron-back' : 'chevron-forward'} 
-                size={20} 
-                color={colors.primary} 
-              />
-            </TouchableOpacity>
-          ))}
+          {quickActions.map((action, index) => {
+            const iconColor = index % 3 === 1 ? colors.accentBlue : index % 3 === 2 ? colors.accentYellow : colors.primary;
+            return (
+              <TouchableOpacity
+                key={action.id}
+                style={styles.actionCard}
+                onPress={() => navigation.navigate(action.screen)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.actionIcon}>
+                  <Ionicons name={action.icon} size={24} color={iconColor} />
+                </View>
+                <Text style={[styles.actionText, isRTL && styles.textRTL]}>
+                  {action.titleAr}
+                </Text>
+                <Ionicons 
+                  name={isRTL ? 'chevron-back' : 'chevron-forward'} 
+                  size={20} 
+                  color={colors.primary} 
+                />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </View>

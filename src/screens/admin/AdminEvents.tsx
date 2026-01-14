@@ -94,7 +94,7 @@ export const AdminEvents: React.FC = () => {
 
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
-            <Ionicons name="calendar" size={28} color={colors.primary} />
+            <Ionicons name="calendar" size={28} color={colors.accentYellow} />
             <Text style={[styles.title, isRTL && styles.textRTL]}>
               {t('events')}
             </Text>
@@ -135,7 +135,7 @@ export const AdminEvents: React.FC = () => {
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Ionicons name="calendar" size={28} color={colors.primary} />
+                <Ionicons name="calendar" size={28} color={colors.accentYellow} />
                 <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
                   {t('addEvent')}
                 </Text>

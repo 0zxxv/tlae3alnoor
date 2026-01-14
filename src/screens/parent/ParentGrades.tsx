@@ -50,7 +50,7 @@ export const ParentGrades: React.FC = () => {
 
         {/* Child Info */}
         <View style={[styles.childInfo, isRTL && styles.childInfoRTL]}>
-          <View style={styles.childAvatar}>
+          <View style={[styles.childAvatar, { backgroundColor: colors.accentBlue }]}>
             <Ionicons name="person" size={28} color={colors.textLight} />
           </View>
           <View style={styles.childDetails}>
@@ -67,8 +67,8 @@ export const ParentGrades: React.FC = () => {
         <View style={styles.averageCard}>
           <Text style={styles.averageLabel}>المعدل العام</Text>
           <View style={styles.averageCircle}>
-            <Ionicons name="trophy" size={24} color={colors.primary} />
-            <Text style={styles.averageValue}>{average}%</Text>
+            <Ionicons name="trophy" size={24} color={colors.accentYellow} />
+            <Text style={[styles.averageValue, { color: colors.accentYellow }]}>{average}%</Text>
           </View>
           <Text style={styles.averageSubtext}>
             من {childGrades.length} مواد
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -172,12 +172,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: colors.primary,
+    borderColor: colors.accentYellow,
   },
   averageValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.accentYellow,
     marginTop: 4,
   },
   averageSubtext: {

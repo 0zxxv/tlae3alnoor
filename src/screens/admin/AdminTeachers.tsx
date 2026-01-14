@@ -165,10 +165,12 @@ export const AdminTeachers: React.FC = () => {
           <Text style={styles.addButtonText}>إضافة معلمة</Text>
         </TouchableOpacity>
 
-        {teachers.map((teacher) => (
+        {teachers.map((teacher, index) => (
           <View key={teacher.id} style={styles.teacherCard}>
             <View style={[styles.teacherInfo, isRTL && styles.rowReverse]}>
-              <View style={styles.avatar}>
+              <View style={[styles.avatar, {
+                backgroundColor: index % 2 === 0 ? colors.accentBlue : colors.accentYellow
+              }]}>
                 <Ionicons name="person" size={24} color={colors.textLight} />
               </View>
               <View style={styles.teacherDetails}>

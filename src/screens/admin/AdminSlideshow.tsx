@@ -205,7 +205,7 @@ export const AdminSlideshow: React.FC = () => {
 
         <View style={styles.header}>
           <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
-            <Ionicons name="images" size={28} color={colors.primary} />
+            <Ionicons name="images" size={28} color={colors.accentBlue} />
             <Text style={[styles.title, isRTL && styles.textRTL]}>
               {t('slideshow')}
             </Text>
@@ -272,7 +272,7 @@ export const AdminSlideshow: React.FC = () => {
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Ionicons name="images" size={28} color={colors.primary} />
+                <Ionicons name="images" size={28} color={colors.accentBlue} />
                 <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
                   {t('addSlide')}
                 </Text>

@@ -126,7 +126,7 @@ export const TeacherGrades: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Ionicons name="create" size={28} color={colors.primary} />
+              <Ionicons name="create" size={28} color={colors.accentYellow} />
               <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
                 {t('addGrade')}
               </Text>
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   selectionItemActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
   },
   selectionText: {
     fontSize: 14,

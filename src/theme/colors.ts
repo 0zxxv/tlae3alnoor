@@ -14,6 +14,9 @@ export const colors = {
   error: '#f44336',
   card: '#ffffff',
   shadow: 'rgba(165, 75, 156, 0.15)',
+  // Accent colors (used sparingly - 10% of app)
+  accentYellow: '#e6c867',
+  accentBlue: '#4396ba',
 };
 
 export const gradients = {

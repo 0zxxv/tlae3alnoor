@@ -188,8 +188,8 @@ export const ParentEvaluations: React.FC = () => {
         <View style={styles.scoreCard}>
           <Text style={styles.scoreLabel}>التقييم العام</Text>
           <View style={styles.scoreCircle}>
-            <Ionicons name="trophy" size={24} color={colors.primary} />
-            <Text style={styles.scoreValue}>{getOverallScore()}%</Text>
+            <Ionicons name="trophy" size={24} color={colors.accentYellow} />
+            <Text style={[styles.scoreValue, { color: colors.accentYellow }]}>{getOverallScore()}%</Text>
           </View>
           <Text style={styles.scoreSubtext}>
             من {evaluations.length} تقييمات
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -438,12 +438,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: colors.primary,
+    borderColor: colors.accentYellow,
   },
   scoreValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.accentYellow,
     marginTop: 4,
   },
   scoreSubtext: {

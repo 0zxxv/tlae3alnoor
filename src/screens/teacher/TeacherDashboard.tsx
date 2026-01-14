@@ -38,26 +38,44 @@ export const TeacherDashboard: React.FC = () => {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Stats Section */}
         <View style={styles.statsContainer}>
-          {stats.map((stat, index) => (
-            <View key={index} style={styles.statCard}>
-              <Ionicons name={stat.icon} size={24} color={colors.primary} />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
+          {stats.map((stat, index) => {
+            const iconColor = index === 0 
+              ? colors.accentYellow 
+              : index === 1 
+              ? colors.accentBlue 
+              : colors.primary;
+            return (
+              <View key={index} style={styles.statCard}>
+                <Ionicons 
+                  name={stat.icon} 
+                  size={24} 
+                  color={iconColor}
+                />
+                <Text style={[styles.statValue, { color: iconColor }]}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </View>
+            );
+          })}
         </View>
 
         {/* Quick Actions */}
         <Card title="إجراءات سريعة" titleAr="إجراءات سريعة">
           <View style={[styles.actionsGrid, isRTL && styles.actionsGridRTL]}>
-            {quickActions.map((action) => (
+            {quickActions.map((action, index) => (
               <TouchableOpacity
                 key={action.id}
                 style={styles.actionButton}
                 onPress={() => navigation.navigate(action.screen)}
                 activeOpacity={0.8}
               >
-                <View style={styles.actionIcon}>
+                <View style={[styles.actionIcon, {
+                  backgroundColor: 
+                    index === 0 
+                      ? colors.accentYellow 
+                      : index === 1 
+                      ? colors.accentBlue 
+                      : colors.primary
+                }]}>
                   <Ionicons name={action.icon} size={24} color={colors.textLight} />
                 </View>
                 <Text style={styles.actionText}>{action.titleAr}</Text>
@@ -85,9 +103,16 @@ export const TeacherDashboard: React.FC = () => {
 
         {/* Students Overview */}
         <Card title="الطالبات" titleAr="الطالبات">
-          {mockStudents.slice(0, 3).map((student) => (
+          {mockStudents.slice(0, 3).map((student, index) => (
             <View key={student.id} style={[styles.studentItem, isRTL && styles.studentItemRTL]}>
-              <View style={styles.studentAvatar}>
+              <View style={[styles.studentAvatar, {
+                backgroundColor: 
+                  index === 0 
+                    ? colors.accentBlue 
+                    : index === 1 
+                    ? colors.accentYellow 
+                    : colors.primary
+              }]}>
                 <Ionicons name="person" size={20} color={colors.textLight} />
               </View>
               <View style={styles.studentInfo}>

@@ -212,7 +212,7 @@ export const AdminStudents: React.FC = () => {
 
           <View style={styles.header}>
             <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
-              <Ionicons name="school" size={28} color={colors.primary} />
+              <Ionicons name="school" size={28} color={colors.accentBlue} />
               <Text style={[styles.title, isRTL && styles.textRTL]}>
                 اختر الدورة
               </Text>
@@ -232,7 +232,7 @@ export const AdminStudents: React.FC = () => {
                 onPress={() => setSelectedCourse(course.id)}
               >
                 <View style={styles.classIcon}>
-                  <Ionicons name={course.icon as any} size={32} color={colors.primary} />
+                  <Ionicons name={course.icon as any} size={32} color={colors.accentYellow} />
                 </View>
                 <Text style={styles.className}>{course.nameAr}</Text>
                 <Text style={styles.classCount}>
@@ -280,7 +280,7 @@ export const AdminStudents: React.FC = () => {
 
           <View style={styles.header}>
             <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
-              <Ionicons name={currentCourse.icon as any} size={28} color={colors.primary} />
+              <Ionicons name={currentCourse.icon as any} size={28} color={colors.accentYellow} />
               <Text style={[styles.title, isRTL && styles.textRTL]}>
                 {currentCourse.nameAr}
               </Text>
@@ -299,7 +299,7 @@ export const AdminStudents: React.FC = () => {
               onPress={() => setSelectedSubclass(subclass.nameAr)}
             >
               <View style={styles.subclassIcon}>
-                <Ionicons name="people" size={24} color={colors.primary} />
+                <Ionicons name="people" size={24} color={colors.accentBlue} />
               </View>
               <View style={styles.subclassInfo}>
                 <Text style={styles.subclassName}>{subclass.nameAr}</Text>

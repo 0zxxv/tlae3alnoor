@@ -7,4 +7,5 @@ export { Slideshow } from './Slideshow';
 export { EventCard } from './EventCard';
 export { GradeCard } from './GradeCard';
 export { AnnouncementCard } from './AnnouncementCard';
+export { BarChart } from './BarChart';
 

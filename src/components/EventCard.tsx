@@ -21,7 +21,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onPress }) => {
       case 'upcoming':
         return colors.primary;
       case 'current':
-        return colors.success;
+        return colors.accentBlue; // Current events get accent blue
       case 'previous':
         return colors.textSecondary;
       default:

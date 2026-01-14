@@ -353,7 +353,7 @@ export const AdminParents: React.FC = () => {
                 style={styles.actionButton}
                 onPress={() => handleViewChildren(parent)}
               >
-                <Ionicons name="people" size={20} color={colors.primary} />
+                <Ionicons name="people" size={20} color={colors.accentYellow} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
@@ -454,7 +454,7 @@ export const AdminParents: React.FC = () => {
             <ScrollView style={styles.studentsList}>
               {parentChildren.map((student) => (
                 <View key={student.id} style={styles.studentItem}>
-                  <Ionicons name="person-circle" size={32} color={colors.primary} />
+                  <Ionicons name="person-circle" size={32} color={colors.accentBlue} />
                   <View style={styles.studentDetails}>
                     <Text style={styles.studentName}>
                       {student.name_ar || student.name}

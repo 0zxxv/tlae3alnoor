@@ -219,7 +219,7 @@ export const AdminEvaluationForms: React.FC = () => {
           <View key={form.id} style={styles.formCard}>
             <View style={styles.formHeader}>
               <View style={styles.formIcon}>
-                <Ionicons name="document-text" size={24} color={colors.primary} />
+                <Ionicons name="document-text" size={24} color={colors.accentBlue} />
               </View>
               <View style={styles.formInfo}>
                 <Text style={[styles.formName, isRTL && styles.textRTL]}>
@@ -237,7 +237,7 @@ export const AdminEvaluationForms: React.FC = () => {
                 style={styles.actionButton}
                 onPress={() => handleViewForm(form)}
               >
-                <Ionicons name="eye" size={20} color={colors.primary} />
+                <Ionicons name="eye" size={20} color={colors.accentYellow} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}

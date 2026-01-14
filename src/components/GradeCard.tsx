@@ -16,7 +16,9 @@ export const GradeCard: React.FC<GradeCardProps> = ({ grade }) => {
   const percentage = Math.round((grade.score / grade.maxScore) * 100);
 
   const getGradeColor = () => {
+    if (percentage >= 95) return colors.accentYellow; // Excellent scores get accent yellow
     if (percentage >= 90) return colors.success;
+    if (percentage >= 85) return colors.accentBlue; // Very good scores get accent blue
     if (percentage >= 70) return colors.primary;
     if (percentage >= 50) return colors.warning;
     return colors.error;

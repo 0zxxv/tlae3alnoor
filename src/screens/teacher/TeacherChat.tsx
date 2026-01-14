@@ -133,7 +133,7 @@ export const TeacherChat: React.FC = () => {
                   )}
                 </View>
                 {unread > 0 && (
-                  <View style={styles.unreadBadge}>
+                  <View style={[styles.unreadBadge, { backgroundColor: colors.accentYellow }]}>
                     <Text style={styles.unreadText}>{unread}</Text>
                   </View>
                 )}
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   sendButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     width: 44,
     height: 44,
     borderRadius: 22,

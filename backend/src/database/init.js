@@ -287,6 +287,44 @@ function insertSampleData() {
   db.run(`INSERT INTO teachers (id, mobile, password, name, name_ar) VALUES (?, ?, ?, ?, ?)`,
     [teacher1Id, '0509876543', hashedPassword, 'Sara Abdullah', 'سارة عبدالله']);
 
+  // Sample Grades - Add grades for all students
+  const subjects = [
+    { en: 'Quran', ar: 'القرآن الكريم' },
+    { en: 'Hadith', ar: 'الحديث الشريف' },
+    { en: 'Fiqh', ar: 'الفقه' },
+    { en: 'Aqeedah', ar: 'العقيدة' },
+    { en: 'Seerah', ar: 'السيرة النبوية' },
+    { en: 'Arabic', ar: 'اللغة العربية' },
+  ];
+
+  // Helper function to get date string (days ago)
+  const getDateString = (daysAgo) => {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Add grades for Student 1 (Fatima) - High performer (85-100)
+  subjects.forEach((subject, index) => {
+    const score = 85 + Math.floor(Math.random() * 16); // 85-100
+    db.run(`INSERT INTO grades (id, student_id, subject, subject_ar, score, max_score, date, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [uuidv4(), student1Id, subject.en, subject.ar, score, 100, getDateString(30 - index * 5), teacher1Id]);
+  });
+
+  // Add grades for Student 2 (Maryam) - Average performer (70-90)
+  subjects.forEach((subject, index) => {
+    const score = 70 + Math.floor(Math.random() * 21); // 70-90
+    db.run(`INSERT INTO grades (id, student_id, subject, subject_ar, score, max_score, date, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [uuidv4(), student2Id, subject.en, subject.ar, score, 100, getDateString(30 - index * 5), teacher1Id]);
+  });
+
+  // Add grades for Student 3 (Nora) - Mixed performance (60-95)
+  subjects.forEach((subject, index) => {
+    const score = 60 + Math.floor(Math.random() * 36); // 60-95
+    db.run(`INSERT INTO grades (id, student_id, subject, subject_ar, score, max_score, date, teacher_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [uuidv4(), student3Id, subject.en, subject.ar, score, 100, getDateString(30 - index * 5), teacher1Id]);
+  });
+
   // Sample Slideshow
   db.run(`INSERT INTO slideshow (id, image_url, title, title_ar, display_order) VALUES (?, ?, ?, ?, ?)`,
     [uuidv4(), 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800', 'Welcome to Our Academy', 'مرحباً بكم في أكاديميتنا', 1]);

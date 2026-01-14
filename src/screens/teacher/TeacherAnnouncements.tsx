@@ -84,7 +84,7 @@ export const TeacherAnnouncements: React.FC = () => {
           <ScrollView style={styles.modalScrollView}>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Ionicons name="megaphone" size={28} color={colors.primary} />
+                <Ionicons name="megaphone" size={28} color={colors.accentBlue} />
                 <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
                   {t('sendAnnouncement')}
                 </Text>

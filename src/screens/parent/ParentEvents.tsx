@@ -46,7 +46,7 @@ export const ParentEvents: React.FC = () => {
         </TouchableOpacity>
 
         <View style={[styles.headerRow, isRTL && styles.headerRowRTL]}>
-          <Ionicons name="calendar" size={28} color={colors.primary} />
+          <Ionicons name="calendar" size={28} color={colors.accentYellow} />
           <Text style={[styles.title, isRTL && styles.textRTL]}>
             {t('events')}
           </Text>
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   filterTabActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: colors.accentBlue,
+    borderColor: colors.accentBlue,
   },
   filterText: {
     fontSize: 14,

@@ -32,7 +32,7 @@ export const ParentAnnouncements: React.FC = () => {
         </TouchableOpacity>
 
         <View style={[styles.headerRow, isRTL && styles.headerRowRTL]}>
-          <Ionicons name="megaphone" size={28} color={colors.primary} />
+          <Ionicons name="megaphone" size={28} color={colors.accentBlue} />
           <Text style={[styles.title, isRTL && styles.textRTL]}>
             {t('announcements')}
           </Text>

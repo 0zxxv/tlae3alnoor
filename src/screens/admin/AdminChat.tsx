@@ -101,7 +101,7 @@ export const AdminChat: React.FC = () => {
             {t('conversations')}
           </Text>
 
-          {chatUsers.map((chatUser) => {
+          {chatUsers.map((chatUser, index) => {
             const unread = messages.filter(
               (m) => m.senderId === chatUser.id && m.receiverId === user?.id && !m.read
             ).length;
@@ -113,7 +113,9 @@ export const AdminChat: React.FC = () => {
                 style={[styles.userItem, isRTL && styles.userItemRTL]}
                 onPress={() => setSelectedUser(chatUser)}
               >
-                <View style={styles.userAvatar}>
+                <View style={[styles.userAvatar, {
+                  backgroundColor: index % 2 === 0 ? colors.accentBlue : colors.accentYellow
+                }]}>
                   <Ionicons name={getRoleIcon(chatUser.role)} size={22} color={colors.textLight} />
                 </View>
                 <View style={styles.userInfo}>
@@ -133,7 +135,7 @@ export const AdminChat: React.FC = () => {
                   )}
                 </View>
                 {unread > 0 && (
-                  <View style={styles.unreadBadge}>
+                  <View style={[styles.unreadBadge, { backgroundColor: colors.accentYellow }]}>
                     <Text style={styles.unreadText}>{unread}</Text>
                   </View>
                 )}
@@ -437,7 +439,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   sendButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accentBlue,
     width: 44,
     height: 44,
     borderRadius: 22,
