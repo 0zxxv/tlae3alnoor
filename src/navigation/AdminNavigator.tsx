@@ -15,6 +15,7 @@ import {
   AdminEvaluationForms,
   AdminAttendance,
   AdminAverageGrades,
+  AdminAnnouncements,
 } from '../screens';
 
 const Tab = createBottomTabNavigator();
@@ -31,6 +32,7 @@ const AdminStack = () => (
     <Stack.Screen name="AdminEvaluationForms" component={AdminEvaluationForms} />
     <Stack.Screen name="AdminAttendance" component={AdminAttendance} />
     <Stack.Screen name="AdminAverageGrades" component={AdminAverageGrades} />
+    <Stack.Screen name="AdminAnnouncements" component={AdminAnnouncements} />
   </Stack.Navigator>
 );
 

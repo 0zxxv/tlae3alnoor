@@ -125,11 +125,20 @@ export const TeacherGrades: React.FC = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Ionicons name="create" size={28} color={colors.accentYellow} />
-              <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
-                {t('addGrade')}
-              </Text>
+            <View style={[styles.modalHeader, isRTL && styles.modalHeaderRTL]}>
+              <TouchableOpacity
+                style={styles.modalBackButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Ionicons name="arrow-forward" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <View style={styles.modalHeaderCenter}>
+                <Ionicons name="create" size={28} color={colors.accentYellow} />
+                <Text style={[styles.modalTitle, isRTL && styles.textRTL]}>
+                  {t('addGrade')}
+                </Text>
+              </View>
+              <View style={{ width: 40 }} />
             </View>
 
             {/* Select Student */}
@@ -344,9 +353,21 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
     marginBottom: 24,
+  },
+  modalHeaderRTL: {
+    flexDirection: 'row-reverse',
+  },
+  modalBackButton: {
+    padding: 8,
+  },
+  modalHeaderCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    justifyContent: 'center',
   },
   modalTitle: {
     fontSize: 24,

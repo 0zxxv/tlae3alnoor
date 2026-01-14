@@ -4,13 +4,14 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
   Alert,
   Modal,
   TextInput,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -20,9 +21,10 @@ import { announcementsApi } from '../../services/api';
 import { Announcement } from '../../types';
 import { useFocusEffect } from '@react-navigation/native';
 
-export const TeacherAnnouncements: React.FC = () => {
+export const AdminAnnouncements: React.FC = () => {
   const { t, isRTL } = useLanguage();
   const { user } = useAuth();
+  const navigation = useNavigation<any>();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,19 +73,15 @@ export const TeacherAnnouncements: React.FC = () => {
       return;
     }
 
-    if (!user?.id) {
-      Alert.alert('خطأ', 'المستخدم غير معروف');
-      return;
-    }
-
     setSaving(true);
     try {
+      // Admin can send announcements without teacher_id
       const newAnnouncement = await announcementsApi.create({
         title: titleAr,
         title_ar: titleAr,
         content: contentAr,
         content_ar: contentAr,
-        teacher_id: user.id,
+        teacher_id: null,
       });
 
       Alert.alert('نجاح', 'تم إرسال الإعلان بنجاح');
@@ -103,6 +101,29 @@ export const TeacherAnnouncements: React.FC = () => {
     }
   };
 
+  const handleDeleteAnnouncement = (announcementId: string) => {
+    Alert.alert(
+      'تأكيد الحذف',
+      'هل أنت متأكد من حذف هذا الإعلان؟',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'حذف',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await announcementsApi.delete(announcementId);
+              await fetchAnnouncements();
+              Alert.alert('نجاح', 'تم حذف الإعلان بنجاح');
+            } catch (error: any) {
+              Alert.alert('خطأ', error.message || 'فشل حذف الإعلان');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Header showLogout />
@@ -112,10 +133,22 @@ export const TeacherAnnouncements: React.FC = () => {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        {/* Back button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-forward" size={20} color={colors.primary} />
+          <Text style={styles.backText}>العودة للوحة التحكم</Text>
+        </TouchableOpacity>
+
         <View style={styles.header}>
-          <Text style={[styles.title, isRTL && styles.textRTL]}>
-            {t('announcements')}
-          </Text>
+          <View style={[styles.titleRow, isRTL && styles.titleRowRTL]}>
+            <Ionicons name="megaphone" size={28} color={colors.accentBlue} />
+            <Text style={[styles.title, isRTL && styles.textRTL]}>
+              {t('announcements')}
+            </Text>
+          </View>
           <Button
             title={t('sendAnnouncement')}
             onPress={() => setModalVisible(true)}
@@ -137,7 +170,16 @@ export const TeacherAnnouncements: React.FC = () => {
           </View>
         ) : (
           announcements.map((announcement) => (
-            <AnnouncementCard key={announcement.id} announcement={announcement} />
+            <View key={announcement.id} style={styles.announcementWrapper}>
+              <AnnouncementCard announcement={announcement} expanded />
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteAnnouncement(announcement.id)}
+              >
+                <Ionicons name="trash-outline" size={20} color={colors.error} />
+                <Text style={styles.deleteText}>حذف</Text>
+              </TouchableOpacity>
+            </View>
           ))
         )}
       </ScrollView>
@@ -217,6 +259,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+    paddingVertical: 8,
+  },
+  backText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -225,6 +279,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleRowRTL: {
+    flexDirection: 'row-reverse',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -232,6 +294,43 @@ const styles = StyleSheet.create({
   },
   textRTL: {
     textAlign: 'right',
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  announcementWrapper: {
+    marginBottom: 16,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: colors.error,
+  },
+  deleteText: {
+    fontSize: 14,
+    color: colors.error,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -296,21 +395,5 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
   },
-  loadingContainer: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginTop: 16,
-    textAlign: 'center',
-  },
 });
+

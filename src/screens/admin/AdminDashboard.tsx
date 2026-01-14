@@ -67,6 +67,7 @@ export const AdminDashboard: React.FC = () => {
     { id: 'students', titleAr: 'الطالبات', icon: 'school' as const, screen: 'AdminStudents' },
     { id: 'evaluations', titleAr: 'نماذج التقييم', icon: 'clipboard' as const, screen: 'AdminEvaluationForms' },
     { id: 'events', titleAr: 'الفعاليات', icon: 'calendar' as const, screen: 'AdminEvents' },
+    { id: 'announcements', titleAr: 'الإعلانات', icon: 'megaphone' as const, screen: 'AdminAnnouncements' },
     { id: 'slideshow', titleAr: 'عرض الصور', icon: 'images' as const, screen: 'AdminSlideshow' },
   ];
 
